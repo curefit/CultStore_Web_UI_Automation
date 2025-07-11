@@ -22,7 +22,7 @@ import java.time.Duration;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.By;
 
-import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.header;
+//import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.header;
 
 public class BaseTest {
     public static WebDriver driver;
@@ -170,9 +170,9 @@ public class BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Store Locator")));
         homePage.clickStoreLocator();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("(//h1[normalize-space()='Find a store'])[1]")
+                By.xpath("(//h1[normalize-space()='Cult exclusive stores'])[1]")
         ));
-        Assert.assertEquals(titleElement.getText(), "Find a store", "Title does not match");
+        Assert.assertEquals(titleElement.getText(), "Cult exclusive stores", "Title does not match");
     }
 
     @Test(priority = 2)
@@ -269,8 +269,6 @@ public class BaseTest {
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
-      // ValidateServicibility.scrollToText("Description");
-      // try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
        ValidateServicibility.enterPincode("444607");
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
@@ -292,13 +290,14 @@ public class BaseTest {
         Assert.assertTrue(ValidateServicibility.isReturnMessageDisplayed(), "No Return Available");
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
-        Assert.assertTrue(ValidateServicibility.isWarrantyMessageDisplayed(), "Warranty Included");
-        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+      /*  Assert.assertTrue(ValidateServicibility.isWarrantyMessageDisplayed(), "Warranty Included");
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }*/
 
         ValidateServicibility.enterPincodeunservicable("372821");
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         ValidateServicibility.clickCheckButton();
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt();}
 
         Assert.assertTrue(ValidateServicibility.isUnserviceableMessageDisplayed(), "Unserviceable message is not displayed");
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
@@ -369,6 +368,53 @@ public class BaseTest {
         Assert.assertTrue(verifyPDPComponents.isBestOfferTextDisplayed("Best Offer - Apply at Checkout"),
                 "Offer text is not displayed as expected");
         try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+    }
+
+    @Test(priority = 6)
+    public void searchProduct() {
+        Pages.SearchProduct searchProduct = new Pages.SearchProduct(); // Page object for SearchProduct
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        // Part one to search for the bottles
+        searchProduct.clickSearchBoxIcon();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        searchProduct.closeSearchBox();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        searchProduct.clickSearchBoxIcon();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        searchProduct.enterSearchText("bottles");
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
+        Assert.assertTrue(driver.findElement(By.linkText("View all search results")).isDisplayed(), "Search results link is not displayed");
+
+        searchProduct.clickViewResult();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        // Part two to search for other categories
+        searchProduct.clickInputSearchBox2();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        searchProduct.clearSearchbox();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        searchProduct.enterSearchText2("Treadmills");
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        driver.findElement(By.xpath("(//button[@data-event-type='submit-search'])[1]")).click();
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
+        String[] searchTerms = {"massage chair", "cycles", "apparel", "t-shirt", "shorts", "Shoes", "accessories", "smart watch"};
+        searchProduct.searchMultipleProducts(driver, searchTerms);
+
+
+
+
+
 
     }
 

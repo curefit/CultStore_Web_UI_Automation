@@ -50,4 +50,19 @@
             <version>1.7.36</version>
         </dependency>
     </dependencies>
+    <!-- Surefire Plugin dependancies for running the testng.xml file via command line -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.0</version> <!-- Correct version if needed -->
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile> <!-- Adjust path if necessary -->
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -85,14 +85,6 @@ public class HomePage extends BaseTest {
         driver.findElement(cyclesLink).click();
     }
 
-    // Locator for "Smart Watch" link
-    By smartWatchLink = By.linkText("Smart Watch");
-
-    // Method to click on the "Smart Watch" link
-  /*  public void clickSmartWatch() {
-        driver.findElement(smartWatchLink).click();
-    }*/
-
     // Locator for "Shop by Activity" link
     By shopByActivityLink = By.linkText("Shop by Activity");
 

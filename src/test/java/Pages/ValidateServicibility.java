@@ -25,8 +25,6 @@ public class ValidateServicibility extends BaseTest {
     By traidmillsCheckbox = By.xpath("(//span[@class='filter-group__item__text'][normalize-space()='Treadmill'])[1]");
     By brandSection = By.xpath("(//div[normalize-space()='Brand'])[1]");
     By cultCheckbox = By.xpath("(//span[normalize-space()='cult'])[1]");
-   // By deliveryAvailabilityText = By.xpath("((//h5[normalize-space()='Check Delivery Availability'])[1]");
-   // By treadmillsButton = By.xpath("(//div[normalize-space()='Treadmills'])[1]");
 
 
     public void clickGymEquipment() {
