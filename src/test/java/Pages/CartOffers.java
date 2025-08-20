@@ -97,7 +97,7 @@ public class CartOffers {
     By inputsearchbox3 = By.xpath("(//input[@placeholder='Search for'])[1]");
 
     public void enterSearchText3(String text) {
-        driver.findElement(inputsearchbox2).sendKeys("Cult Apex Massage Chair with Zero Gravity");
+        driver.findElement(inputsearchbox3).sendKeys("Cult Apex Massage Chair with Zero Gravity");
     }
 
     By massagechair = By.xpath("//div[@class='product-block__title' and text()='Cult Apex Massage Chair with Zero Gravity, SL Track 2D Massage Technique and Bluetooth AI voice Function For Full Body Massage At Home']");
