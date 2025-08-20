@@ -8,14 +8,6 @@ import static Test.BaseTest.driver;
 public class SearchProduct {
 
 
-   // By searchBoxicon = By.xpath("(//span[@class='show-search-link__icon'])[2]");// Click on search icon homescreen
-   // By inputsearchbox = By.xpath("//input[@class='main-search__input']");// Click on input search box to enter the text
-  //  By searchfor = By.xpath("(//button[@aria-label='Search'])[1]");// Click on the search button near the inoput box
-  //  By closeSearchBox = By.xpath("(//button[@aria-label='Close'])[1]");// Click on the cross icon to close the search box
-   // By viewResult = By.linkText("View all search results"); // After entering the text View result button should be enable to click on that
-   // By inputsearchbox2 = By.xpath("(//input[@placeholder='Search our store'])[1]");
-
-
 
     By searchBoxicon = By.xpath("(//span[@class='show-search-link__icon'])[2]");// Click on search icon homescreen
     public void clickSearchBoxIcon() {
