@@ -23,7 +23,6 @@ import java.util.Map;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.By;
 
-import static Test.HeadlessBaseTest.driver;
 
 //import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.header;
 
