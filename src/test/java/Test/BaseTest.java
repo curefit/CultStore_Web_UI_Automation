@@ -25,8 +25,6 @@ import org.openqa.selenium.By;
 
 
 
-//import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.header;
-
 public class BaseTest {
 
     public static WebDriver driver;
