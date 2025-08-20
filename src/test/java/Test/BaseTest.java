@@ -24,7 +24,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.By;
 
 
-//import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.header;
 
 public class BaseTest {
 
@@ -44,8 +43,6 @@ public class BaseTest {
         options.addArguments("--disable-popup-blocking");
         options.addArguments("--incognito");
 
-     //   options.addArguments("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-
 
         // Initialize WebDriver
         WebDriverManager.chromedriver().setup();
@@ -57,14 +54,6 @@ public class BaseTest {
         //Initialise WebDriverWait
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-
-     /*   Map<String, Object> headers = new HashMap<>();
-        headers.put("automation-allow", "superman aaya superman aaya, bc superman aaya");
-        Map<String, Object> headerMap = new HashMap<>();
-        headerMap.put("headers", headers);
-
-        ((ChromeDriver) driver).executeCdpCommand("Network.enable", new HashMap<>());
-        ((ChromeDriver) driver).executeCdpCommand("Network.setExtraHTTPHeaders", headerMap);*/
 
 
         // Navigate to the website
