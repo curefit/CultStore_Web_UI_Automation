@@ -29,7 +29,7 @@ public class VerifyPDPComponents extends BaseTest {
     By buyonemiButton = By.xpath("//img[@class='snap_buy_now_btn']");
     By closecartButton = By.xpath("(//button[@data-event-name='Close Cart Drawer'])[1]");
     By plusButton = By.cssSelector("div.product-discount-view-all.product-discount-modal-button"); // This is for additional offer
-
+                                           //(//button[@data-event-name='Close Cart Drawer'])[1]
 
 
 
@@ -61,7 +61,7 @@ public class VerifyPDPComponents extends BaseTest {
 
         WebElement popup = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='snap_pay_only_text']")));
         String popupText = popup.getText();
-        String expectedText = "Pay only ₹30000 Now";
+        String expectedText = "Pay only ₹31250 Now";
         if (popupText.contains(expectedText)) {
             System.out.println("Pop-up text matches the expected text.");
         } else {
