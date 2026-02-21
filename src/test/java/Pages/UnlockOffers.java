@@ -2,10 +2,24 @@ package Pages;
 
 import Test.BaseTest;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
+import java.util.List;
 
 import static Test.BaseTest.driver;
 
 public class UnlockOffers extends BaseTest {
+
+
+    public WebDriver driver;
+
+    // Add this constructor
+    public UnlockOffers(WebDriver driver) {
+        this.driver = driver;
+    }
 
     By Footwearlink = By.linkText("Footwear");
 
@@ -13,23 +27,8 @@ public class UnlockOffers extends BaseTest {
         driver.findElement(Footwearlink).click();
     }
 
-    By Sportshoes = By.xpath("//div[@class='logo-list__logo-title' and normalize-space(text())='Sports Shoes']");
 
-    public void clickSportshoes(){
-        driver.findElement(Sportshoes).click();
-    }
-
-    public boolean isBestBackTextDisplayed(String expectedText) {
-        try {
-            By offerTextElement = By.xpath("//a[@class='has-paging__title h1' and @data-event-name='View Collection' and normalize-space(text())='Best is Back']");
-            String actualText = driver.findElement(offerTextElement).getText();
-            return actualText.contains(expectedText);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    By shoes = By.xpath("//div[@class='product-block__title' and normalize-space(text())='cult Impact Men Training Shoes - Black']");
+    By shoes = By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n");
 
     public void clickShoes() {
         driver.findElement(shoes).click();
@@ -71,9 +70,9 @@ public class UnlockOffers extends BaseTest {
         }
     }
 
-    public boolean isWelcome15TextDisplayed(String expectedText) {
+    public boolean isWELCOME500TextDisplayed(String expectedText) {
         try {
-            By offerTextElement = By.xpath("(//div[normalize-space()='WELCOME15'])[1]");
+            By offerTextElement = By.xpath("//div[@class='cart-offer-callout-card-body-header column-reverse']//div[@class='offer-code'][normalize-space()='WELCOME500']");
             String actualText = driver.findElement(offerTextElement).getText();
             return actualText.contains(expectedText);
         } catch (Exception e) {
@@ -98,11 +97,32 @@ public class UnlockOffers extends BaseTest {
         driver.findElement(tshirts).click();
     }
 
-    By bluetshirt = By.xpath("//div[@class='product-block__title' and normalize-space(text())=\"Men's Sky Blue Workout Essential T-shirt\"]");
+    By colourfilter = By.xpath("//div[normalize-space()='Color']");
+    public void clickColourFilter() {
+        driver.findElement(colourfilter).click();
+    }
+
+    By bluecheckbox = By.xpath("//span[normalize-space()='Blue']");
+    public void clickBlueCheckbox() {
+        driver.findElement(bluecheckbox).click();
+    }
+
+    // Locator for any product containing "Blue" in its title
+    By bluetshirt = By.xpath("//div[@class='product-block__title' and contains(., 'Blue')]");
 
     public void clickBluetshirt() {
-        driver.findElement(bluetshirt).click();
+        // Find all blue t-shirts and click the first available one
+        List<WebElement> blueTshirts = driver.findElements(bluetshirt);
+        if (!blueTshirts.isEmpty()) {
+            blueTshirts.get(0).click();
+        } else {
+            // Optional: Handle the case where no blue t-shirts are found
+            System.out.println("No blue T-shirts found.");
+        }
     }
+
+
+
 
     public boolean isUnlockPDPTextDisplayed(String expectedText) {
         try {

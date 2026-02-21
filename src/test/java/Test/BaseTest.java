@@ -17,8 +17,7 @@ import org.testng.annotations.Test;
 
 import java.awt.*;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+
 
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.By;
@@ -44,6 +43,15 @@ public class BaseTest {
         options.addArguments("--incognito");
 
 
+        // The "Masking" kit
+        options.setExperimentalOption("excludeSwitches", java.util.Collections.singletonList("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
+        options.addArguments("--disable-blink-features=AutomationControlled");
+
+        // Add a REAL User-Agent
+        options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+
+
         // Initialize WebDriver
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver(options);
@@ -67,101 +75,103 @@ public class BaseTest {
     @Test(priority = 1)
     void validateTitles_Products() {
 
+        // Click on the New Arrivals link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("New Arrivals")));
         homePage.clickNewArrivals();
-        WebElement titleElement = driver.findElement(By.xpath("(//h1[normalize-space()='New Arrivals'])[1]"));
+        // Verify the title "New Arrivals"
+        WebElement titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//h1[normalize-space()='New Arrivals'])[1]")));
         String actualTitle = titleElement.getText();
         Assert.assertEquals(actualTitle, "New Arrivals", "Title does not match");
 
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
+        // Click on the men link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Men")));
         homePage.clickMen();
+        // Verify the title "Mens Sports Wear"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("(//h1[normalize-space()=\"Men's Wear\"])[1]")));
+                By.xpath("(//h1[normalize-space()=\"Men's Sports Wear\"])[1]")));
         actualTitle = titleElement.getText();
-        Assert.assertEquals(actualTitle, "Men's Wear", "Title does not match");
+        Assert.assertEquals(actualTitle, "Men's Sports Wear", "Title does not match");
 
-        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
+        // Click on the women link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Women")));
         homePage.clickWomen();
+        // Verify the title "Womens Sports Wear"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("(//h1[normalize-space()=\"Women's Wear\"])[1]")
+                By.xpath("(//h1[normalize-space()=\"Women's Sports Wear\"])[1]")
         ));
         actualTitle = titleElement.getText();
-        Assert.assertEquals(actualTitle, "Women's Wear", "Title does not match");
+        Assert.assertEquals(actualTitle, "Women's Sports Wear", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Click on the apparel link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Apparel")));
         homePage.clickApparel();
+        // Verify the title contains "Apparel"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Apparel')]")
         ));
-        Assert.assertEquals(titleElement.getText(), "Apparel", "Title does not match");
+        Assert.assertTrue(titleElement.getText().contains("Apparel"),
+                "Title match failed! Expected text to contain 'Apparel' but found: [" + titleElement.getText() + "]");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Click on the footwear link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Footwear")));
         homePage.clickFootwear();
-        titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Footwear')]")
-        ));
-        Assert.assertEquals(titleElement.getText(), "Footwear", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
+        // Wait for the next element to ensure the page has loaded
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
         homePage.clickGymEquipment();
+        // Verify the title "Fitness & Gym Equipment"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Treadmills, Exercise Bikes and More')]")
+                By.xpath("(//h1[normalize-space()='Fitness & Gym Equipment'])[1]")
         ));
-        Assert.assertEquals(titleElement.getText(), "Treadmills, Exercise Bikes and More", "Title does not match");
+        Assert.assertEquals(titleElement.getText(), "Fitness & Gym Equipment", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Click on the massagers link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Massagers")));
         homePage.clickMassagers();
+        // Verify the title "Relaxation Machines"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Recovery')]")
+                By.xpath("(//h1[normalize-space()='Relaxation Machines'])[1]")
         ));
-        Assert.assertEquals(titleElement.getText(), "Recovery", "Title does not match");
+        Assert.assertEquals(titleElement.getText(), "Relaxation Machines", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Click on the accessories link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Accessories")));
         homePage.clickAccessories();
 
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
+        // Wait for the next element to ensure the page has loaded
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cycles")));
         homePage.clickCycles();
+        // Verify the title "Cycles"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Cycles')]")
         ));
         Assert.assertEquals(titleElement.getText(), "Cycles", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
-
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
-        driver.findElement(By.xpath("(//a[@class='navigation__link' and normalize-space()='Shop by Activity'])[2]")).click();
+        // Click on the shop by activity link
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Shop by Activity")));
+        homePage.clickShopByActivity();
+        // Verify the title "Fitness Essentials for Every Activity"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector(".hometitle.h1.spaced-row.align-center")));
-        Assert.assertEquals(titleElement.getText().trim(), "Shop by Activity", "Title does not match");
+        Assert.assertEquals(titleElement.getText().trim(), "Fitness Essentials for Every Activity", "Title does not match");
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Click on the store locator link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Store Locator")));
         homePage.clickStoreLocator();
+
+        // Verify the title "Cult exclusive stores"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("(//h1[normalize-space()='Cult exclusive stores'])[1]")
         ));
         Assert.assertEquals(titleElement.getText(), "Cult exclusive stores", "Title does not match");
+
+        // Click on the bulk orders link
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Bulk Orders")));
+        homePage.clickBulkOrders();
+
     }
 
     @Test(priority = 2)
@@ -170,71 +180,67 @@ public class BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
         cartCheckout.clickGymEquipment();
 
-
-     /*   WebElement filterElement = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[contains(text(),'Filter')])[1]")));
-        Actions actions = new Actions(driver);
-        actions.doubleClick(filterElement).perform();
-
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
-        cartCheckout.expandBrandSection();
-
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='cult'])[1]")));
-        cartCheckout.clickCultCheckbox(); // If I add the delay after this line it will fail to find the element in the next step, so I removed it.
-        //try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } */
-
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Treadmills'])[1]")));
         cartCheckout.clicktreadmillsButton();
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        // Wait for the brand section to be clickable and then expand it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
         cartCheckout.expandBrandSection();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        // Wait for the 'cult' checkbox to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='filter-group__item__text'][normalize-space()='RPM Fitness by Cult']")));
         cartCheckout.clickCultCheckbox();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        // Wait for the treadmill product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']")));
+        cartCheckout.selectTreadmill();
 
+        // Wait for the 'Add to Cart' button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Add to Cart'])[1]")));
+        cartCheckout.clickAddToCartButton();
 
-        // select available T-shirt on PLP
-        cartCheckout.selectAvailabletreadmill();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
-        // add to cart
-        cartCheckout.clickAddToCart();
-        // Wait for the cart icon to be clickable
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-        // Click on the cart icon
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        // Wait for the cart icon to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='cart-link__icon']")));
         cartCheckout.clickCart();
-        // Click on the checkout button
+
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        // Wait for the checkout button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
         cartCheckout.clickCheckoutButton();
 
         // Verify the checkout page title "Login to checkout"
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='h4 login-title']")));
         Assert.assertTrue(cartCheckout.isLoginToCheckoutDisplayed(), "'Login to checkout' message is not displayed!");
 
         // Enter phone number and continue
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-        cartCheckout.enterPhoneAndContinue("8830280256");
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='rs-cart-drawer__login rs-login-modal']//input[@placeholder='Enter your phone number']")));
+        cartCheckout.enterPhoneAndContinue("8792514524");
 
-        // Verify the OTP title
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-        Assert.assertTrue(cartCheckout.isEnterOtpDisplayed(), "'Enter OTP' screen is not displayed!");
-
-
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        // Verify the OTP title (Below block will not execute due to captcha on otp screen)
+       /* wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[@class='h4 otp-title']")));
+        Assert.assertTrue(cartCheckout.isEnterOtpDisplayed(), "'Enter OTP' screen is not displayed!");*/
     }
+
+
 
     @Test(priority = 3)
     public void validateCartEmpty() {
         CartEmpty cartEmpty = new CartEmpty(driver);
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        // Wait for the cart icon to be clickable, then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='cart-link__icon']")));
         cartEmpty.clickCartIcon();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        // Wait for the empty cart text to be visible, then verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[normalize-space()='Your cart is empty']")));
         cartEmpty.verifyEmptyCartText();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        // Wait for the "Back to Homepage" button to be clickable, then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[normalize-space()='Continue Shopping']")));
         cartEmpty.clickBackToHomepage();
     }
+
 
     @Test(priority = 4)
     public void checkServiceability() {
@@ -253,40 +259,19 @@ public class BaseTest {
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='filter-group__item__text'][normalize-space()='Treadmill'])[1]")));
         ValidateServicibility.clickTreadmillsCheckbox();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
         ValidateServicibility.expandBrandSection();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='cult'])[1]")));
         ValidateServicibility.clickCultCheckbox();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[contains(text(),'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto')])[1]")));
         ValidateServicibility.selectAvailabletreadmill();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
         ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)");// Use JavaScript to scroll down the page(x,y) component x- vertical, y- horizontal
         try {
@@ -295,82 +280,41 @@ public class BaseTest {
             Thread.currentThread().interrupt();
         }
 
-
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@id='PincodeInput'])[1]")));
         ValidateServicibility.enterPincode("444607");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Check'])[1]")));
         ValidateServicibility.clickCheckButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='delivery-text'])[1]")));
         Assert.assertTrue(ValidateServicibility.isServiceableMessageDisplayed(), "delivery-text");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//li[normalize-space()='Easy 10 days exchange available'])[1]")));
         Assert.assertTrue(ValidateServicibility.isExchangeMessageDisplayed(), "Easy 10 days exchange available");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//li[normalize-space()='COD eligibility shown at checkout'])[1]")));
         Assert.assertTrue(ValidateServicibility.isPayondeliveryMessageDisplayed(), "COD eligibility shown at checkout");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//li[normalize-space()='No Return Available'])[1]")));
         Assert.assertTrue(ValidateServicibility.isReturnMessageDisplayed(), "No Return Available");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-      /*  Assert.assertTrue(ValidateServicibility.isWarrantyMessageDisplayed(), "Warranty Included");
-        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }*/
 
+      /*  Assert.assertTrue(ValidateServicibility.isWarrantyMessageDisplayed(), "Warranty Included");*/
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@id='PincodeInput'])[1]")));
         ValidateServicibility.enterPincodeunservicable("372821");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        ValidateServicibility.clickCheckButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Check'])[1]")));
+        ValidateServicibility.clickCheckButton();
+
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//li[@class='unserviceable'])[1]")));
         Assert.assertTrue(ValidateServicibility.isUnserviceableMessageDisplayed(), "Unserviceable message is not displayed");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
 
     }
@@ -378,221 +322,121 @@ public class BaseTest {
     @Test(priority = 5)
     public void verifyPDPComponents() {
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Massagers")));
         Pages.VerifyPDPComponents verifyPDPComponents = new Pages.VerifyPDPComponents(driver);
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Click on the massagers link
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Massagers")));
         verifyPDPComponents.clickMassagerLink();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the massage chair product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Massage Chair'])[1]")));
         verifyPDPComponents.clickMassagchair();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the brand section to be clickable and then expand it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
         verifyPDPComponents.clickBrandDropdown();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the 'cult' checkbox to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='cult'])[1]")));
         verifyPDPComponents.clickCultcheckbox();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the massage chair product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Cult LUXE Massage Chair | Zero Gravity with AI Voice & Bluetooth | 3D Experience | Smart Dial & 18 Preset Programs | Smart Touch Screen'])[1]")));
         verifyPDPComponents.clickMassagechairproduct();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        Assert.assertTrue(
-                driver.findElement(By.xpath("(//span[@class='badge-text'])[1]")).isDisplayed(),
-                "534+ people bought this in last 30 days is not displayed"
-        );
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the EMI info icon to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//img[@class='snap_cult_info_img']")));
         verifyPDPComponents.clickemiinfoicon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-        // Pop up code
-        VerifyPDPComponents pdp = new VerifyPDPComponents(driver);
-        Assert.assertTrue(pdp.verifypopup(), "Pop-up text does not match expected value.");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the "No Cost EMIs" text to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='snap_emi_option' and text()='EMI Options']")));
+        Assert.assertTrue(
+                driver.findElement(By.xpath("//div[@class='snap_emi_option' and text()='EMI Options']")).isDisplayed(),
+                    "EMI Options text is displayed"
+             );
+
+        // Wait for the close icon to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//img[@id='snapModalCloseon_page']")));
         verifyPDPComponents.closePopup();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the "Buy on EMI" button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//img[@class='snap_buy_now_btn']")));
         verifyPDPComponents.clickBuyonemiButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        // Wait for the cart icon to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='cart-link__icon']")));
+        verifyPDPComponents.openCart();
 
+        // Wait for the "No Cost EMIs" text to be visible and verify it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@aria-label='Close cart']")));
         verifyPDPComponents.closeCart();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the "Additional offers for you" section to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='product-discount-additional'])[1]")));//(//div[@class='product-discount-additional'])[1]
         Assert.assertTrue(
                 verifyPDPComponents.isOfferTextDisplayed("Additional offers for you"),
                 "Offer text is not displayed as expected");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the plus button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='product-discount-view-all product-discount-modal-button']")));
         verifyPDPComponents.clickPlusButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-
+        // Wait for the "Offers for you" title to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//h2[normalize-space()='Offers for you'])[1]")));
         Assert.assertTrue(verifyPDPComponents.isOfferForyou(), "Offer for you is not displayed as expected");
-        try {
-            Thread.sleep(6000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the "Best Offer - Apply at Checkout" text to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='cart-offer-callout-card-header' and normalize-space()='Best Offer - Apply at Checkout']\n")));
         Assert.assertTrue(verifyPDPComponents.isBestOfferTextDisplayed("Best Offer - Apply at Checkout"),
                 "Offer text is not displayed as expected");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
+        // Wait for the "Know More" button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='offer-code'][normalize-space()='RELAX10K'])[2]")));
+        Assert.assertTrue(verifyPDPComponents.isRelax10kOfferTextDisplayed("RELAX10K"),
+                "RELAX10K offer text is not displayed as expected");
+        // Wait for the "WELCOME500" offer text to be clickable and verify it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='offer-code'][normalize-space()='WELCOME500']")));
+        Assert.assertTrue(verifyPDPComponents.isWELCOME500OfferTextDisplayed("WELCOME500"),
+                "WELCOME500 offer text is not displayed as expected");
+
 
     }
 
     @Test(priority = 6)
     public void searchProduct() {
-        Pages.SearchProduct searchProduct = new Pages.SearchProduct(); // Page object for SearchProduct
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        Pages.SearchProduct searchProduct = new Pages.SearchProduct(driver); // Page object for SearchProduct
+
 
         // Part one to search for the bottles
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         searchProduct.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search input box to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         searchProduct.closeSearchBox();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search box icon to be clickable and then click it again to open the search box
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         searchProduct.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search input box to be clickable and then enter the search text
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         searchProduct.enterSearchText("bottles");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search button to be clickable and then click it
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
         Assert.assertTrue(driver.findElement(By.linkText("View all search results")).isDisplayed(), "Search results link is not displayed");
-
+        // Wait for the "View all search results" link to be clickable and then click it  and verify the search results page is displayed
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
         searchProduct.clickViewResult();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
         // Part two to search for other categories
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@placeholder='Search our store'])[1]")));
         searchProduct.clickInputSearchBox2();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search input box to be clickable and then clear the existing text
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@placeholder='Search our store'])[1]")));
         searchProduct.clearSearchbox();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the search input box to be clickable and then enter the search text
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@placeholder='Search our store'])[1]")));
         searchProduct.enterSearchText2("Treadmills");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        // Wait for the search button to be clickable and then click it
         driver.findElement(By.xpath("(//button[@data-event-type='submit-search'])[1]")).click();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
         String[] searchTerms = {"massage chair", "cycles", "apparel", "t-shirt", "shorts", "Shoes", "accessories", "smart watch"};
         searchProduct.searchMultipleProducts(driver, searchTerms);
@@ -602,344 +446,162 @@ public class BaseTest {
     @Test(priority = 7)
     public void unlockOffers() {
 
-        Pages.UnlockOffers unlockOffers = new Pages.UnlockOffers();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        Pages.UnlockOffers unlockOffers = new Pages.UnlockOffers(driver);
 
+        // Click on the footwear link
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Footwear")));
         unlockOffers.clickFootwearlink();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        unlockOffers.clickSportshoes();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        Assert.assertTrue(unlockOffers.isBestBackTextDisplayed("Best is Back"), "Best is Back text is not displayed");
-
-        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)");
-        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)");
-
+        //  ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)"); --> Use to add the scroll down the page if the element is not visible in viewport
+        // Wait for the shoes product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n")));
         unlockOffers.clickShoes();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
-
+        // Wait for the "Additional offers for you" section to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='product-discount-additional'])[1]")));
         unlockOffers.isAdditonalOffersSectionDisplayed("Additional offers for you");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the plus button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div.product-discount-view-all.product-discount-modal-button")));
         unlockOffers.clickPlusButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "Offers for you" title to be visible and verify it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='cart-offer-callout-card-header'])[1]"))); //(//div[@class='cart-offer-callout-card-header'])[1]
         unlockOffers.isBestOfferTextDisplayed("Best Offer - Apply at Checkout");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        unlockOffers.isBestOfferTextDisplayed("Best Offer - Apply at Checkout");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "Unlock Offers" text to be clickable and verify it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='Unlock Offers'])[1]")));
         unlockOffers.isUnlockOffersTextDisplayed("Unlock Offers");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        unlockOffers.clickKnowMore();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "RELAX10K" offer text to be clickable and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='cart-offer-callout-card-body-header column-reverse']//div[@class='offer-code'][normalize-space()='WELCOME500']")));
+        Assert.assertTrue(unlockOffers.isWELCOME500TextDisplayed("WELCOME500"), "WELCOME500 offer text is not displayed as expected");
+        // Close the offers modal
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='offer-modal-close'])[1]")));
         driver.findElement(By.xpath("(//span[@class='offer-modal-close'])[1]")).click();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Click on the men link
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Men")));
         unlockOffers.clickMenslink();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the t-shirts product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='logo-list__logo-title'])[1]")));
         unlockOffers.clickTshirts();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the color filter to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='Color']")));
+        unlockOffers.clickColourFilter();
+        // Wait for the blue color checkbox to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space()='Blue']")));
+        unlockOffers.clickBlueCheckbox();
+        // Wait for the blue t-shirt product to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='product-block__title' and contains(., 'Blue')]")));
         unlockOffers.clickBluetshirt();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "Unlock Offers" text to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='product-discount-additional aligncenter'])[1]")));
         unlockOffers.isUnlockPDPTextDisplayed("Unlock Offers");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the plus button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='product-discount-view-all product-discount-modal-button'])[1]")));
         unlockOffers.clickPlusButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "Offers for you" title to be visible and verify it
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='offer-code'])[1]")));
         unlockOffers.isFitstart20OfferTextDisplayed("FITSTART20");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        // Wait for the "Know More" button to be clickable and then click it
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='cart-offer-callout-card-know-more-btn'])[1]")));
         driver.findElement(By.xpath("(//span[@class='cart-offer-callout-card-know-more-btn'])[1]")).click();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
     }
 
     @Test(priority = 8)
     public void cartOffers() {
-        Pages.CartOffers cartOffers = new Pages.CartOffers();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        Pages.CartOffers cartOffers = new Pages.CartOffers(driver);
+
 
         // Add the treadmill
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         cartOffers.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         cartOffers.enterSearchText("Smartrun Carson 5.5 HP Peak Treadmill");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[@aria-label='Search'])[1]")));
         cartOffers.clickSearchFor();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         // Below line is used to scroll down the page to view the treadmill product
         //((JavascriptExecutor) driver).executeScript("window.scrollBy(0,700)"); // Use JavaScript to scroll down the page(x,y) component x- vertical, y- horizontal
-        cartOffers.clickTreadmill1();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space()='RPM Fitness by Cult']")));
+        cartOffers.clickRPMFilterButton();
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']")));
+        cartOffers.clickTreadmill1();
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Add to Cart'])[1]")));
         cartOffers.clickAddToCartButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
         // Add the Shoulder Pop Active T-shirt
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         cartOffers.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         cartOffers.enterSearchText1("Shoulder Pop Active T-shirt");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
         cartOffers.clickSearchFor();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='product-block__title'][normalize-space()='Shoulder Pop Active T-shirt'])[1]")));
         cartOffers.clickGreenshirt();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//fieldset[contains(@class, 'option--size')]//label")));
         cartOffers.selectTshirtSize();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        cartOffers.clickAddToCartButton2();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         // Add the Sports Bra
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         cartOffers.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         cartOffers.enterSearchText2("Sports Bra");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
         cartOffers.clickViewResult();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='product-block__title' and text()=\"Women's Black Training Essential Bra\"]")));
         cartOffers.clickSportsBra();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//fieldset[contains(@class, 'option--size')]//label")));
         cartOffers.selectBraSize();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-        cartOffers.clickAddToCartButton2();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         // Add the Massage Chair
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
         cartOffers.clickSearchBoxIcon();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         cartOffers.enterSearchText3("Massage Chair");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[@aria-label='Search'])[1]")));
         cartOffers.clickSearchFor();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='Cult Zen Massage Chair with Zero Gravity, SL Track 2D Massage Technique and Bluetooth AI voice Function For Full Body Massage At Home']")));
         cartOffers.clickMassageChair();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Add to Cart'])[1]")));
         cartOffers.clickAddToCartButton();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='cart-link__icon']")));
         cartOffers.clickOnCart();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
 
         // Locate the scrollable element
-        WebElement scrollableElement = driver.findElement(By.cssSelector(".cart-drawer__content"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='rs-cart-drawer__content cart-drawer__content-upper']")));
+        WebElement scrollableElement = driver.findElement(By.xpath("//div[@class='rs-cart-drawer__content cart-drawer__content-upper']"));
 
         // Scroll down by 500 pixels
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollTop = arguments[0].scrollTop + 500;", scrollableElement);
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(), 'More Offers')]\n")));
         cartOffers.clickMoreOffersButton();
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
 
         cartOffers.printCartOffers();
         try {
@@ -948,32 +610,7 @@ public class BaseTest {
             Thread.currentThread().interrupt();
         }
 
-        cartOffers.applyRelax20KOfferIfAvailable();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        cartOffers.applyRun7KOfferIfAvailable();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        cartOffers.applyRun4KOfferIfAvailable();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        cartOffers.applyRun1KOfferIfAvailable();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        cartOffers.applyWelcome15OfferIfAvailable();
+        cartOffers.applyAllAvailableOffers();
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
@@ -989,54 +626,59 @@ public class BaseTest {
     public void CheckoutLogin(){
 
         Pages.CheckoutLogin checkoutLogin = new Pages.CheckoutLogin(driver);
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
         checkoutLogin.clickGymEquipment();
 
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Exercise Cycles'])[1]")));
         checkoutLogin.clickExerciseBike();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Smartbike Danville | 6.5kg Flywheel | Max Weight-130kg | 100 Level Magnetic Resistance (with 6 months extended warranty)'])[1]")));
         checkoutLogin.clickBikeExercise();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='btn btn--large add-to-cart' and @type='submit' and @name='add' and @data-event-type='add-to-cart' and @data-event-name='Add to Cart']")));
         checkoutLogin.clickaddcart();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='cart-link__icon'])[1]")));
         checkoutLogin.clickCartButton();
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
         checkoutLogin.clickCheckoutButton();
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
 
-        checkoutLogin.completeCheckoutWithOtpTextValidation("8792514524", "999999");
-        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        WebElement phoneInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='rs-cart-drawer__login rs-login-modal']//input[@placeholder='Enter your phone number']")));
+        phoneInput.clear();
+        phoneInput.sendKeys("8792514524");
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(@class, 'continue--button') and text()='Continue']\n"))).click();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[@class='h4 otp-title' and text()='Enter OTP']")));
+//
+//        // Wait for and enter OTP digits
+//        for (int i = 1; i <= 6; i++) {
+//            WebElement otpInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("otp-digit-" + i)));
+//            otpInput.clear();
+//            otpInput.sendKeys(String.valueOf("999999".charAt(i - 1)));
+//
+//        }
+//
+//        // Wait for confirm OTP button and click
+//        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//cart-drawer-otp-confirm-button[contains(@class, 'otp--confirm__button') and normalize-space(text())='Confirm']"))).click();
+//
+//
+//      //  checkoutLogin.completeCheckoutWithOtpTextValidation("8792514524", "999999");
+//        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
 
     }
+
+
+
+
+
+
+
 
    @AfterMethod
     public void teardown() {

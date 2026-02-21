@@ -14,9 +14,9 @@ public class CartCheckout extends BaseTest {
     By gymEquipmentLink = By.linkText("Gym Equipment");
     By filterButton = By.xpath("(//span[contains(text(),'Filter')])[1]");
     By brandSection = By.xpath("(//div[normalize-space()='Brand'])[1]");
-    By cultCheckbox = By.xpath("(//span[normalize-space()='cult'])[1]");
+    By cultCheckbox = By.xpath("//span[@class='filter-group__item__text'][normalize-space()='RPM Fitness by Cult']");
     By treadmillsButton = By.xpath("(//div[normalize-space()='Treadmills'])[1]");
-    By addToCartButton = By.xpath("(//span[@class='cart-link__icon'])[1]");
+    By addToCartButton = By.xpath("(//button[@class='btn btn--large add-to-cart'])[1]");
 
     // Constructor for CartCheckout
     public CartCheckout(WebDriver driver) {
@@ -26,10 +26,6 @@ public class CartCheckout extends BaseTest {
     // Method to click on the "Gym Equipment" link
     public void clickGymEquipment() {
         driver.findElement(gymEquipmentLink).click();
-    }
-    // Method to click on the "Filter" button
-    public void clickFilter() {
-        driver.findElement(filterButton).click();
     }
     // Method to expand the "Brand" section in the filter
     public void expandBrandSection() {
@@ -43,68 +39,41 @@ public class CartCheckout extends BaseTest {
     public void clicktreadmillsButton() {
         driver.findElement(treadmillsButton).click();
     }
-    // Method to select the first available treadmill
-    public void selectAvailabletreadmill() {
-        boolean treadmillFound = false;
-        for (int i = 1; i <= 5; i++) {
-            String xpath = "(//div[contains(text(),'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto')])[" + i + "]"; // (//div[contains(text(),'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto')])[1]
-            try {
-                WebElement treadmill = driver.findElement(By.xpath(xpath));
-                if (treadmill.isDisplayed()) {
-                    treadmill.click();
-                    treadmillFound = true;
-                    break;
-                }
-            } catch (NoSuchElementException e) {
-                // Try next iteration if the element is not found
-            }
-        }
-        if (!treadmillFound) {
-            System.out.println("No 'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto' found in the specified range.");
-        }
+    // Method to select the available treadmill
+
+    By treadmill = By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']");
+    public void selectTreadmill() {
+        driver.findElement(treadmill).click();
     }
 
+    public void clickAddToCartButton(){
+        driver.findElement(addToCartButton).click();
+    }
+
+
     // Method to click the "Add to Cart" button
-    public void clickAddToCart() {
-        try {
-            WebElement addToCartBtn = driver.findElement(By.xpath("(//button[@class='btn btn--large add-to-cart'])[1]"));
-            // Check if button is visible and enabled
-            if (addToCartBtn.isDisplayed() && addToCartBtn.isEnabled()) {
-                addToCartBtn.click();
-                System.out.println("Clicked 'Add to Cart' button.");
-            } else {
-                System.out.println("'Add to Cart' button is not visible or not enabled.");
-            }
-        } catch (Exception e) {
-            System.out.println("'Add to Cart' button not found or not clickable.");
-        }
+
+    By skipButton = By.xpath("(//button[normalize-space()='Skip to Cart'])[1]");
+
+    public void clickSkipButton(){
+        driver.findElement(skipButton).click();
     }
-    // Method to click on the cart link
-    public void clickCart() {
-        try {
-            WebElement cartLink = driver.findElement(addToCartButton);
-            cartLink.click();
-            System.out.println("Clicked on the cart link.");
-        } catch (NoSuchElementException e) {
-            System.out.println("Cart link not found.");
-        }
-    }
+
+
+    By  cartLink = By.xpath("(//span[@class='cart-link__icon'])[1]");
+    public void clickCart(){
+        driver.findElement(cartLink).click();
+    } //
+
 
     // In src/test/java/Pages/CartCheckout.java
 
-    public void clickCheckoutButton() {
-        try {
-            WebElement checkoutBtn = driver.findElement(By.xpath("(//marmeto-checkout-button[@class='btn btn--large btn--wide marmeto-button--loading'])[1]"));
-            if (checkoutBtn.isDisplayed() && checkoutBtn.isEnabled()) {
-                checkoutBtn.click();
-                System.out.println("Clicked 'Checkout' button.");
-            } else {
-                System.out.println("'Checkout' button is not visible or not enabled.");
-            }
-        } catch (Exception e) {
-            System.out.println("'Checkout' button not found or not clickable.");
-        }
+    By checkoutButton = By.xpath("//button[normalize-space()='Checkout']");
+    public void clickCheckoutButton(){
+        driver.findElement(checkoutButton).click();
     }
+
+
 
     // Method to check if the "Login to checkout" message is displayed
     public boolean isLoginToCheckoutDisplayed() {
@@ -119,14 +88,14 @@ public class CartCheckout extends BaseTest {
    public void enterPhoneAndContinue(String phoneNumber) {
         try {
             // Enter phone number
-            WebElement phoneInput = driver.findElement(By.xpath("(//input[@id='cartDrawerPhoneNumber'])[1]"));
+            WebElement phoneInput = driver.findElement(By.xpath("//div[@class='rs-cart-drawer__login rs-login-modal']//input[@placeholder='Enter your phone number']"));
             phoneInput.clear();
             phoneInput.sendKeys(phoneNumber);
 
             // Wait for the button to become enabled (if needed)
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("(//form[@id='cart-drawer-phone-login-form']//button[contains(@class,'continue--button')])[1]")
+                    By.xpath("//button[contains(@class, 'continue--button') and text()='Continue']\n")
             ));
 
             continueBtn.click();

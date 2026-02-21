@@ -24,11 +24,12 @@ public class VerifyPDPComponents extends BaseTest {
     By brandDropdown = By.xpath("(//div[normalize-space()='Brand'])[1]");
     By cultcheckbox = By.xpath("(//span[normalize-space()='cult'])[1]");
     By massagechairproduct = By.xpath("(//div[normalize-space()='Cult LUXE Massage Chair | Zero Gravity with AI Voice & Bluetooth | 3D Experience | Smart Dial & 18 Preset Programs | Smart Touch Screen'])[1]");
-    By emiinfoicon = By.xpath("(//img[@class='snap_cult_info_img'])[1]");
+    By emiinfoicon = By.xpath("//img[@class='snap_cult_info_img']");
     By emiPopupcloseButton = By.xpath("//img[@id='snapModalCloseon_page']");
     By buyonemiButton = By.xpath("//img[@class='snap_buy_now_btn']");
-    By closecartButton = By.xpath("(//button[@data-event-name='Close Cart Drawer'])[1]");
-    By plusButton = By.cssSelector("div.product-discount-view-all.product-discount-modal-button"); // This is for additional offer
+    By opencart = By.xpath("//span[@class='cart-link__icon']");
+    By closecartButton = By.xpath("//button[@aria-label='Close cart']");
+    By plusButton = By.xpath("//div[@class='product-discount-view-all product-discount-modal-button']"); // This is for additional offer
                                            //(//button[@data-event-name='Close Cart Drawer'])[1]
 
 
@@ -78,6 +79,10 @@ public class VerifyPDPComponents extends BaseTest {
         driver.findElement(buyonemiButton).click();
     }
 
+    public void openCart() {
+        driver.findElement(opencart).click();
+    }
+
     public void closeCart() {
         driver.findElement(closecartButton).click();
     }
@@ -116,9 +121,19 @@ public class VerifyPDPComponents extends BaseTest {
         }
     }
 
-    public boolean isRelax20kOfferTextDisplayed(String expectedText) {
+    public boolean isRelax10kOfferTextDisplayed(String expectedText) {
         try {
-            WebElement offerTextElement = driver.findElement(By.xpath("(//div[@class='offer-code'][normalize-space()='RELAX20K'])[2]"));
+            WebElement offerTextElement = driver.findElement(By.xpath("(//div[@class='offer-code'][normalize-space()='RELAX10K'])[2]"));//
+            String actualText = offerTextElement.getText();
+            return actualText.contains(expectedText);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isWELCOME500OfferTextDisplayed(String expectedText) {
+        try {
+            WebElement offerTextElement = driver.findElement(By.xpath("//div[@class='offer-code'][normalize-space()='WELCOME500']"));
             String actualText = offerTextElement.getText();
             return actualText.contains(expectedText);
         } catch (Exception e) {

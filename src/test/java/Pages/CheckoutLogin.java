@@ -1,34 +1,30 @@
 package Pages;
 
-import org.openqa.selenium.By;
+import Test.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-
-import java.time.Duration;
-
-import static Test.BaseTest.driver;
-
-public class CheckoutLogin {
 
 
-    By gymequipmentLink = By.linkText("Gym Equipment");
+public class CheckoutLogin extends BaseTest {
+
+
+
+    public WebDriver driver;
 
     public CheckoutLogin(WebDriver driver) {
+        this.driver = driver;
     }
+
+    By gymequipmentLink = By.linkText("Gym Equipment");
 
     public void clickGymEquipment() {
         driver.findElement(gymequipmentLink).click();
     }
 
-    By exerciseBike = By.xpath("(//div[normalize-space()='Exercise Bikes'])[1]");
+    By exerciseBike = By.xpath("(//div[normalize-space()='Exercise Cycles'])[1]");
 
     public void clickExerciseBike() {
         driver.findElement(exerciseBike).click();
@@ -55,148 +51,46 @@ public class CheckoutLogin {
         driver.findElement(cartButton).click();
     }
 
-    By checkoutButton = By.xpath("(//marmeto-checkout-button[@class='btn btn--large btn--wide marmeto-button--loading'])[1]");
+    By checkoutButton = By.xpath("//button[normalize-space()='Checkout']");
 
     public void clickCheckoutButton() {
         driver.findElement(checkoutButton).click();
     }
 
-    // This is the practise code ************************//
+    // Java
+    By phoneInputXpath = By.xpath("//div[@class='rs-cart-drawer__login rs-login-modal']//input[@placeholder='Enter your phone number']");
+    By continueBtnXpath = By.xpath("//button[contains(@class, 'continue--button') and text()='Continue']\n");
+    By enterOtpTextXpath = By.xpath("//h2[@class='h4 otp-title' and text()='Enter OTP']");
+    By confirmOtpBtnXpath = By.xpath("//cart-drawer-otp-confirm-button[contains(@class, 'otp--confirm__button') and normalize-space(text())='Confirm']");
 
-    // In CheckoutLogin.java
-    public void completeCheckoutWithOtpTextValidation(String phoneNumber, String otp) {
-        By phoneInputXpath = By.xpath("(//input[@id='cartDrawerPhoneNumber'])[1]");
-        By continueBtnXpath = By.xpath("//button[@class='button continue--button btn btn--primary cart-drawer-phone-login-button marmeto-button--loading' and @type='submit' and @data-event-type='submit' and @data-event-name='Continue Button Click' and normalize-space(text())='Continue']");
-        By enterOtpTextXpath = By.xpath("//h2[@class='h4 otp-title' and text()='Enter OTP']");
-        By confirmOtpBtnXpath = By.xpath("//cart-drawer-otp-confirm-button[contains(@class, 'otp--confirm__button') and normalize-space(text())='Confirm']");
-        By cartButton = By.xpath("(//span[@class='cart-link__icon'])[1]");
-
-        int retryCount = 0;
-        int maxRetries = 2;
-        boolean otpScreenVisible = false;
-
-        while (!otpScreenVisible && retryCount < maxRetries) {
-            driver.findElement(phoneInputXpath).clear();
-            driver.findElement(phoneInputXpath).sendKeys(phoneNumber);
-            driver.findElement(continueBtnXpath).click();
-
-            try {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
-                WebElement otpTitle = wait.until(ExpectedConditions.visibilityOfElementLocated(enterOtpTextXpath));
-                otpScreenVisible = otpTitle.isDisplayed();
-            } catch (Exception e) {
-                otpScreenVisible = false;
-            }
-
-            if (!otpScreenVisible) {
-                driver.navigate().refresh();
-                driver.findElement(cartButton).click();
-                retryCount++;
-            }
-        }
-
-        if (otpScreenVisible) {
-            try { Thread.sleep(5000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            for (int i = 1; i <= 6; i++) {
-                WebElement otpInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("otp-digit-" + i)));
-                otpInput.clear();
-                otpInput.sendKeys(String.valueOf(otp.charAt(i - 1)));
-            }
-            try { Thread.sleep(2000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-            driver.findElement(confirmOtpBtnXpath).click();
-        } else {
-            throw new RuntimeException("Failed to reach OTP screen after retries.");
-        }
+    public void enterPhoneNumber(String phoneNumber) {
+        driver.findElement(phoneInputXpath).clear();
+        driver.findElement(phoneInputXpath).sendKeys(phoneNumber);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-   //*********************************************************************************************//
-
-// The oiginal code which is commented
-  /*  public void clickCheckoutButton() {
-        try {
-            WebElement checkoutBtn = driver.findElement(By.xpath("(//marmeto-checkout-button[@class='btn btn--large btn--wide marmeto-button--loading'])[1]"));
-            if (checkoutBtn.isDisplayed() && checkoutBtn.isEnabled()) {
-                checkoutBtn.click();
-                System.out.println("Clicked 'Checkout' button.");
-            } else {
-                System.out.println("'Checkout' button is not visible or not enabled.");
-            }
-        } catch (Exception e) {
-            System.out.println("'Checkout' button not found or not clickable.");
-        }
+    public void clickContinueBtn() {
+        driver.findElement(continueBtnXpath).click();
     }
 
-    public boolean isLoginToCheckoutDisplayed() {
+    public boolean isOtpScreenDisplayed() {
         try {
-            WebElement loginTitle = driver.findElement(By.xpath("//div[@class='h4 login-title']"));  //(//div[@class='h4 login-title'])[1]
-            return loginTitle.isDisplayed() && "Login to checkout".equals(loginTitle.getText().trim());
+            return driver.findElement(enterOtpTextXpath).isDisplayed();
         } catch (NoSuchElementException e) {
             return false;
         }
     }
 
-    public void enterPhoneNumber(String phoneNumber) {
-        try {
-            WebElement phoneInput = driver.findElement(By.xpath("(//input[@id='cartDrawerPhoneNumber'])[1]"));
-            phoneInput.clear();
-            phoneInput.sendKeys(phoneNumber);
-            System.out.println("Entered phone number.");
-        } catch (Exception e) {
-            System.out.println("Failed to enter phone number: " + e.getMessage());
-        }
-    }
-
-    By continuebt = By.xpath("//button[@class='button continue--button btn btn--primary cart-drawer-phone-login-button marmeto-button--loading' and @type='submit' and @data-event-type='submit' and @data-event-name='Continue Button Click' and normalize-space(text())='Continue']");
-
-    public void clickContinue() {
-        driver.findElement(continuebt).click();
-    }
-
-    public void enterOtp(String otp) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public void enterOtpDigits(String otp) {
         for (int i = 1; i <= 6; i++) {
-            WebElement otpInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.id("otp-digit-" + i)
-            ));
+            WebElement otpInput = driver.findElement(By.id("otp-digit-" + i));
             otpInput.clear();
             otpInput.sendKeys(String.valueOf(otp.charAt(i - 1)));
         }
-        System.out.println("Entered OTP: " + otp);
     }
 
-    By confirmotop = By.xpath("//cart-drawer-otp-confirm-button[contains(@class, 'otp--confirm__button') and normalize-space(text())='Confirm']");
-
-    public void clickConfirmOtp() {
-        driver.findElement(confirmotop).click();
-    }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public void clickConfirmOtpBtn() {
+        driver.findElement(confirmOtpBtnXpath).click();
+    }
 
 
 
@@ -229,30 +123,6 @@ public class CheckoutLogin {
         }
     }
 
-
-
-
-
-
-  /*  public void enterPhoneAndContinue(String phoneNumber) {
-        try {
-            // Enter phone number
-            WebElement phoneInput = driver.findElement(By.xpath("(//input[@id='cartDrawerPhoneNumber'])[1]"));
-            phoneInput.clear();
-            phoneInput.sendKeys(phoneNumber);
-
-            // Wait for the button to become enabled (if needed)
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("(//form[@id='cart-drawer-phone-login-form']//button[contains(@class,'continue--button')])[1]")
-            ));
-
-            continueBtn.click();
-            System.out.println("Entered phone and clicked Continue.");
-        } catch (Exception e) {
-            System.out.println("Failed to enter phone or click Continue: " + e.getMessage());
-        }
-    }*/
 
 
     public boolean isEnterOtpDisplayed() {

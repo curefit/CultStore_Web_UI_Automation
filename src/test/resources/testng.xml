@@ -11,7 +11,9 @@
 
     <test name="MyTests">
         <classes>
-            <class name="Test.BaseTest"/>
+            <class name="Test.HeadlessBaseTest"/>
+
+
             <!-- Add additional test classes here if needed -->
         </classes>
     </test>
