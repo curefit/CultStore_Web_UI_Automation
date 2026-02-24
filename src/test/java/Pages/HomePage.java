@@ -101,5 +101,14 @@ public class HomePage extends BaseTest {
         driver.findElement(storeLocatorLink).click();
     }
 
+    By bulkOrdersLink = By.linkText("Bulk Orders");
+
+    public void clickBulkOrders() {
+        driver.findElement(bulkOrdersLink).click();
+    }
+
+
+
+
 
 }

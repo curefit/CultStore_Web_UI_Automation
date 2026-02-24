@@ -1,11 +1,18 @@
 package Pages;
 
+import Test.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import static Test.BaseTest.driver;
 
-public class SearchProduct {
+
+public class SearchProduct extends BaseTest {
+
+    public WebDriver driver;
+
+    public SearchProduct(WebDriver driver) {
+        this.driver = driver;
+    }
 
 
 

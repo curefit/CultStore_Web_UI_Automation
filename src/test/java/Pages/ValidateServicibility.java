@@ -70,21 +70,6 @@ public class ValidateServicibility extends BaseTest {
         }
     }
 
-    // The following code will require in the funture.
-  /*  public void scrollToText(String text) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        //By locator = By.xpath("((//summary[normalize-space()='Description'])[1]" + text + "']");
-        By locator = By.xpath("//summary[normalize-space()='Description' and contains(., '" + text + "')]");
-        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        try {
-            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
-        } catch (Exception e) {
-            // Fallback to Actions if JS fails
-            Actions actions = new Actions(driver);
-            actions.moveToElement(element).perform();
-        }
-    }*/
-
     public void enterPincode(String pincode) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         By pincodeInput = By.xpath("(//input[@id='PincodeInput'])[1]");

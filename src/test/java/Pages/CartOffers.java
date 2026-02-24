@@ -1,17 +1,22 @@
 package Pages;
 
+import Test.BaseTest;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static Test.BaseTest.driver;
 
-public class CartOffers {
+public class CartOffers extends BaseTest {
+
+    public WebDriver driver;
+
+    // Add this constructor
+    public CartOffers(WebDriver driver) {
+        this.driver = driver;
+    }
+
 
     By searchBoxicon = By.xpath("(//span[@class='show-search-link__icon'])[2]"); // Click on search icon homescreen
 
@@ -38,10 +43,17 @@ public class CartOffers {
         driver.findElement(viewResult).click();
     }
 
-    By treadmill1 = By.xpath("(//div[normalize-space()='Smartrun Carson 5.5 HP Peak Treadmill | 15-level Auto-Incline | Max Weight-130kg | Max Speed-16kmph (with 6 Months Extended Warranty)'])[1]");
+
+    By RPMfilterbutton = By.xpath("//span[normalize-space()='RPM Fitness by Cult']");
+
+    public void clickRPMFilterButton() {
+        driver.findElement(RPMfilterbutton).click();
+    }
+
+    By treadmill1 = By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']");
 
     public void clickTreadmill1() {
-        driver.findElement(treadmill1).click();
+        driver.findElement(treadmill1).click(); //
     }
 
 
@@ -70,11 +82,57 @@ public class CartOffers {
         driver.findElement(addToCartButton2).click();
     }
 
-    By tshirtsize = By.xpath("//label[@class='opt-label opt-label--btn btn relative text-center' and @for='product-form-template--18929590304936__main-8625439998120-size-opt-3']//span[@class='js-value' and text()='XL']");
 
     public void selectTshirtSize() {
-        driver.findElement(tshirtsize).click();
+        boolean sizeSelectedAndAdded = false;
+        // 1. Find all available size options.
+        List<WebElement> sizeOptions = driver.findElements(By.xpath("//fieldset[contains(@class, 'option--size')]//label"));
+
+        if (sizeOptions.isEmpty()) {
+            System.out.println("No size options found for the T-shirt.");
+            return;
+        }
+
+        System.out.println("Found " + sizeOptions.size() + " total size options. Checking availability...");
+        List<String> availableSizes = sizeOptions.stream().map(WebElement::getText).collect(Collectors.toList());
+        System.out.println("Available sizes on page: " + availableSizes);
+
+        // 2. Iterate through each size, click it, and check the button status.
+        for (WebElement sizeOption : sizeOptions) {
+            String sizeText = sizeOption.getText();
+            try {
+                // Click the size option to check its status.
+                sizeOption.click();
+                // A short pause for the UI to update.
+                Thread.sleep(500);
+
+                // 3. Check if the "Add to Cart" button is visible and has the correct text.
+                List<WebElement> addToCartButtons = driver.findElements(By.xpath("//button[@class='btn btn--large add-to-cart']"));
+
+                if (!addToCartButtons.isEmpty() && addToCartButtons.get(0).isDisplayed() && addToCartButtons.get(0).getText().equalsIgnoreCase("Add to Cart")) {
+                    System.out.println("Size '" + sizeText + "' is in stock. Selecting this size and adding to cart.");
+                    addToCartButtons.get(0).click(); // Click the "Add to Cart" button.
+                    sizeSelectedAndAdded = true;
+                    break; // Exit the loop as we've found and added an available size.
+                } else {
+                    // 4. If "Add to Cart" is not there, check for the "Sold out" indicator.
+                    List<WebElement> soldOutIndicators = driver.findElements(By.xpath("//div[@class='quantity-submit-row__flex flex align-center']//button[contains(text(), 'Sold out')]"));
+                    if (!soldOutIndicators.isEmpty() && soldOutIndicators.get(0).isDisplayed()) {
+                        System.out.println("Size '" + sizeText + "' is Sold Out.");
+                    } else {
+                        System.out.println("Could not determine stock status for size '" + sizeText + "'. Neither 'Add to Cart' nor 'Sold out' found.");
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("An error occurred while checking size '" + sizeText + "': " + e.getMessage());
+            }
+        }
+
+        if (!sizeSelectedAndAdded) {
+            System.out.println("No available T-shirt sizes were found in stock to add to cart.");
+        }
     }
+
 
     By inputsearchbox2 = By.xpath("(//input[@placeholder='Search for'])[1]");
 
@@ -88,19 +146,63 @@ public class CartOffers {
         driver.findElement(sportsbra).click();
     }
 
-    By Brasize = By.xpath("(//label[@for='product-form-template--18929590304936__main-8625312432296-size-opt-1'])[1]");
 
     public void selectBraSize() {
-        driver.findElement(Brasize).click();
+        boolean sizeSelectedAndAdded = false;
+        // 1. Find all available size options.
+        List<WebElement> sizeOptions = driver.findElements(By.xpath("//fieldset[contains(@class, 'option--size')]//label"));
+
+        if (sizeOptions.isEmpty()) {
+            System.out.println("No size options found for the bra.");
+            return;
+        }
+
+        System.out.println("Found " + sizeOptions.size() + " total size options. Checking availability...");
+        List<String> availableSizes = sizeOptions.stream().map(WebElement::getText).collect(Collectors.toList());
+        System.out.println("Available sizes on page: " + availableSizes);
+
+        // 2. Iterate through each size, click it, and check the button status.
+        for (WebElement sizeOption : sizeOptions) {
+            String sizeText = sizeOption.getText();
+            try {
+                // Click the size option to check its status.
+                sizeOption.click();
+                // A short pause for the UI to update.
+                Thread.sleep(500);
+
+                // 3. Check if the "Add to Cart" button is visible.
+                List<WebElement> addToCartButtons = driver.findElements(By.xpath("//button[@class='btn btn--large add-to-cart']"));
+
+                if (!addToCartButtons.isEmpty() && addToCartButtons.get(0).isDisplayed() && addToCartButtons.get(0).getText().equalsIgnoreCase("Add to Cart")) {
+                    System.out.println("Size '" + sizeText + "' is in stock. Selecting this size and adding to cart.");
+                    addToCartButtons.get(0).click(); // Click the "Add to Cart" button.
+                    sizeSelectedAndAdded = true;
+                    break; // Exit the loop as we've found and added an available size.
+                } else {
+                    // 4. If "Add to Cart" is not there, check for the "Sold out" indicator.
+                    List<WebElement> soldOutIndicators = driver.findElements(By.xpath("//div[@class='quantity-submit-row__flex flex align-center']"));
+                    if (!soldOutIndicators.isEmpty() && soldOutIndicators.get(0).isDisplayed()) {
+                        System.out.println("Size '" + sizeText + "' is Sold Out.");
+                    } else {
+                        System.out.println("Could not determine stock status for size '" + sizeText + "'. Neither 'Add to Cart' nor 'Sold out' found.");
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("An error occurred while checking size '" + sizeText + "': " + e.getMessage());
+            }
+        }
+
+        if (!sizeSelectedAndAdded) {
+            System.out.println("No available bra sizes were found in stock to add to cart.");
+        }
     }
 
-    By inputsearchbox3 = By.xpath("(//input[@placeholder='Search for'])[1]");
 
     public void enterSearchText3(String text) {
         driver.findElement(inputsearchbox2).sendKeys("Cult Apex Massage Chair with Zero Gravity");
     }
 
-    By massagechair = By.xpath("//div[@class='product-block__title' and text()='Cult Apex Massage Chair with Zero Gravity, SL Track 2D Massage Technique and Bluetooth AI voice Function For Full Body Massage At Home']");
+    By massagechair = By.xpath("//div[normalize-space()='Cult Zen Massage Chair with Zero Gravity, SL Track 2D Massage Technique and Bluetooth AI voice Function For Full Body Massage At Home']");
 
     public void clickMassageChair() {
         driver.findElement(massagechair).click();
@@ -114,123 +216,65 @@ public class CartOffers {
 
     // Click on more offers button
 
-    By moreOffersButton = By.xpath("(//span[@class='btn'])[1]");
+    By moreOffersButton = By.xpath("//span[contains(text(), 'More Offers')]\n");
 
     public void clickMoreOffersButton() {
         driver.findElement(moreOffersButton).click();
     }
 
-    // Validate the Offers in the cart are persent or not and print the offefrs
+
+    // Validate the Offers in the cart are present or not and print the offers
     public void printCartOffers() {
         String[] offerXpaths = {
-                "(//div[normalize-space()='RELAX20K'])[1]",
-                "(//div[normalize-space()='RUN7K'])[1]",
-                "(//div[normalize-space()='RUN4K'])[1]",
-                "(//div[normalize-space()='RUN1K'])[1]",
-                "(//div[normalize-space()='WELCOME15'])[1]"
+                "//extra-offers-container[@class='cart-offer-callout-card-container']//div[@class='offer-code'][normalize-space()='RELAX10K']",
+                "//div[normalize-space()='RUN2K']",
+                "//div[normalize-space()='BURNOFF1K']",
+                "//div[@class='cart-offer-callout-card-show-more-container-eligible']//div[@class='offer-code'][normalize-space()='WELCOME500']",
+                "//div[normalize-space()='ACTIVE200']"
         };
 
+        System.out.println("Available offers:");
         for (String xpath : offerXpaths) {
-            WebElement offerElement = driver.findElement(By.xpath(xpath));
-            String offerText = offerElement.getText();
-            System.out.println("Offer: " + offerText);
-            // Add assertions or validations if needed
-            if (offerText.isEmpty()) {
-                System.out.println("No offers available.");
-            } else {
-                System.out.println("Offer is available: " + offerText);
+            try {
+                WebElement offerElement = driver.findElement(By.xpath(xpath));
+                String offerText = offerElement.getText();
+                if (!offerText.isEmpty()) {
+                    System.out.println("- " + offerText);
+                }
+            } catch (Exception e) {
+                // Offer not found, do nothing
             }
         }
     }
 
+    // Clicks the "Apply" button for each available offer.
+    public void applyAllAvailableOffers() {
+        // This XPath should find all "APPLY" buttons for the eligible offers.
+        List<WebElement> applyButtons = driver.findElements(By.xpath("//button[contains(@class, 'rs-legacy-offer-card__action') and text()='APPLY']\n"));
 
-    public void applyRelax20KOfferIfAvailable() {
-        List<WebElement> relaxOffer = driver.findElements(By.xpath("(//div[normalize-space()='RELAX20K'])[1]"));
-        if (!relaxOffer.isEmpty()) {
-            List<WebElement> applyButtons = driver.findElements(By.className("apply-btn-text"));
-            applyButtons.get(1).click(); // Clicks the third "APPLY" button
+        if (applyButtons.isEmpty()) {
+            System.out.println("No 'Apply' buttons found for available offers.");
+            return;
+        }
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement offerPopup = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[@class='cart-offer-applied__title h4 heading-font' and normalize-space()='₹20000 saved']")
-            ));
+        System.out.println("Found " + applyButtons.size() + " offers to apply. Clicking them sequentially.");
 
-            System.out.println("Offer applied pop-up: " + offerPopup.getText());
-        } else {
-            System.out.println("RELAX20K offer not available.");
+        // Iterate and click each apply button.
+        // Note: Applying multiple coupons might not be possible on the website.
+        // This will attempt to click all visible "Apply" buttons.
+        for (WebElement applyButton : applyButtons) {
+            try {
+                applyButton.click();
+                System.out.println("Clicked an 'Apply' button.");
+                // A short pause might be needed for the UI to react before the next click.
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                System.out.println("Could not click an 'Apply' button: " + e.getMessage());
+            }
         }
     }
-
-    public void applyRun7KOfferIfAvailable() {
-        List<WebElement> run7KOffer = driver.findElements(By.xpath("(//div[normalize-space()='RUN7K'])[1]"));
-        if (!run7KOffer.isEmpty()) {
-            List<WebElement> applyButtons = driver.findElements(By.className("apply-btn-text"));
-            applyButtons.get(2).click(); // Clicks the fourth "APPLY" button
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement offerPopup = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[@class='cart-offer-applied__title h4 heading-font' and normalize-space()='₹7000 saved']")
-            ));
-
-            System.out.println("Offer applied pop-up: " + offerPopup.getText());
-        } else {
-            System.out.println("RUN7K offer not available.");
-        }
-    }
-
-    public void applyRun4KOfferIfAvailable() {
-        List<WebElement> run4KOffer = driver.findElements(By.xpath("(//div[normalize-space()='RUN4K'])[1]"));
-        if (!run4KOffer.isEmpty()) {
-            List<WebElement> applyButtons = driver.findElements(By.className("apply-btn-text"));
-            applyButtons.get(3).click(); // Clicks the fifth "APPLY" button
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement offerPopup = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[@class='cart-offer-applied__title h4 heading-font' and normalize-space()='₹4000 saved']")
-            ));
-
-            System.out.println("Offer applied pop-up: " + offerPopup.getText());
-        } else {
-            System.out.println("RUN4K offer not available.");
-        }
-    }
-
-    public void applyRun1KOfferIfAvailable() {
-        List<WebElement> run1KOffer = driver.findElements(By.xpath("(//div[normalize-space()='RUN1K'])[1]"));
-        if (!run1KOffer.isEmpty()) {
-            List<WebElement> applyButtons = driver.findElements(By.className("apply-btn-text"));
-            applyButtons.get(4).click(); // Clicks the sixth "APPLY" button
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement offerPopup = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[@class='cart-offer-applied__title h4 heading-font' and normalize-space()='₹1000 saved']")
-            ));
-
-            System.out.println("Offer applied pop-up: " + offerPopup.getText());
-        } else {
-            System.out.println("RUN1K offer not available.");
-        }
-    }
-
-    public void applyWelcome15OfferIfAvailable() {
-        List<WebElement> welcome15Offer = driver.findElements(By.xpath("(//div[normalize-space()='WELCOME15'])[1]"));
-        if (!welcome15Offer.isEmpty()) {
-            List<WebElement> applyButtons = driver.findElements(By.className("apply-btn-text"));
-            applyButtons.get(5).click(); // Clicks the seventh "APPLY" button
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement offerPopup = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//div[@class='cart-offer-applied__title h4 heading-font' and normalize-space()='₹500 saved']")
-            ));
-
-            System.out.println("Offer applied pop-up: " + offerPopup.getText());
-        } else {
-            System.out.println("WELCOME15 offer not available.");
-        }
-    }
-
-
 }
+
 
 
 
