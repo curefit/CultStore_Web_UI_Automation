@@ -41,6 +41,9 @@ public class HeadlessBaseTest {
         options.addArguments("--headless=new"); // Use modern headless mode in CI
         options.addArguments("--no-sandbox"); // Sandbox typically required in CI environments
         options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--remote-debugging-port=9222");
+        options.addArguments("--disable-software-rasterizer");
 
         // The "Masking" kit from BaseTest
         options.setExperimentalOption("excludeSwitches", java.util.Collections.singletonList("enable-automation"));
@@ -50,9 +53,14 @@ public class HeadlessBaseTest {
         // Add a REAL User-Agent from BaseTest
         options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
 
+        String chromeBinary = System.getenv("CHROME_BIN");
+        if (chromeBinary != null && !chromeBinary.isBlank()) {
+            options.setBinary(chromeBinary);
+        }
+
         // Initialize WebDriver
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver(options);
+        driver = startChromeWithRetry(options, 2);
         driver.manage().deleteAllCookies();
 
         // Initialize WebDriverWait
@@ -65,6 +73,25 @@ public class HeadlessBaseTest {
         homePage = new HomePage(driver);
         cartCheckout = new CartCheckout(driver);
 
+    }
+
+    private WebDriver startChromeWithRetry(ChromeOptions options, int attempts) {
+        RuntimeException lastError = null;
+        for (int i = 1; i <= attempts; i++) {
+            try {
+                return new ChromeDriver(options);
+            } catch (RuntimeException e) {
+                lastError = e;
+                System.err.println("Chrome start attempt " + i + " failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+        throw lastError;
     }
 
     @Test(priority = 1)
@@ -639,8 +666,5 @@ public class HeadlessBaseTest {
 
 
 }
-
-
-
 
 
