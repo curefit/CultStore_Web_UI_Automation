@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -32,12 +33,12 @@ public class HeadlessBaseTest {
         // Set up ChromeDriver with options
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--disable-notifications");
-        options.addArguments("--start-maximized");
+        options.addArguments("--window-size=1920,1080");
         options.addArguments("--disable-popup-blocking");
         options.addArguments("--incognito");
 
         // Additional code for the headless mode
-        options.addArguments("--headless"); // Add headless mode
+        options.addArguments("--headless=new"); // Use modern headless mode in CI
         options.addArguments("--no-sandbox"); // Sandbox typically required in CI environments
         options.addArguments("--disable-dev-shm-usage");
 
@@ -67,7 +68,7 @@ public class HeadlessBaseTest {
     }
 
     @Test(priority = 1)
-    void validateTitles_Products() {
+    public void validateTitles_Products() {
         // This is the code for headless Automation mode
 
         // New Arrivals
@@ -623,6 +624,14 @@ public class HeadlessBaseTest {
 
     }
 
+    @AfterMethod(alwaysRun = true)
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+            driver = null;
+        }
+    }
+
 
 
 
@@ -630,8 +639,6 @@ public class HeadlessBaseTest {
 
 
 }
-
-
 
 
 
