@@ -90,6 +90,10 @@ public class HeadlessBaseTest {
         driver = startChromeWithRetry(options, 2);
         driver.manage().deleteAllCookies();
 
+        // Set viewport size for consistent rendering (important for lazy loading)
+        // NEW: Maximize ensures proper viewport for lazy-loading detection
+        driver.manage().window().maximize();
+
         // Configure timeouts for headless mode stability
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
@@ -100,11 +104,16 @@ public class HeadlessBaseTest {
         // Navigate to the website
         driver.get("https://cultstore.com/");
         
+        // Wait for page to be fully loaded (JavaScript ready state)
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        wait.until(webDriver -> js.executeScript("return document.readyState").equals("complete"));
+        
         // Debug: Log page load information for headless troubleshooting
         System.out.println("========== PAGE LOAD DEBUG INFO ==========");
         System.out.println("Current URL: " + driver.getCurrentUrl());
         System.out.println("Page Title: " + driver.getTitle());
         System.out.println("Page Source Length: " + driver.getPageSource().length() + " characters");
+        System.out.println("Window Size: " + driver.manage().window().getSize());
         
         // Take screenshot for debugging
         try {
@@ -118,14 +127,46 @@ public class HeadlessBaseTest {
             System.err.println("Failed to save screenshot: " + e.getMessage());
         }
         
-        // Wait a bit longer for JavaScript to execute
-        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        // FIX: Improved lazy-loading trigger for headless mode
+        // This ensures all navigation links and interactive elements become visible
+        System.out.println("Triggering lazy-loaded content with progressive scroll...");
+        long pageHeight = (Long) js.executeScript("return document.body.scrollHeight");
+        int scrollSteps = 5;
+        for (int i = 1; i <= scrollSteps; i++) {
+            long scrollTo = (pageHeight / scrollSteps) * i;
+            js.executeScript("window.scrollTo(0, " + scrollTo + ");");
+            try { Thread.sleep(800); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+        // Scroll back to top
+        js.executeScript("window.scrollTo(0, 0);");
+        try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        System.out.println("Lazy-load trigger complete");
         System.out.println("==========================================");
 
         // Initialize page objects
         homePage = new HomePage(driver);
         cartCheckout = new CartCheckout(driver);
 
+    }
+
+
+    // ENHANCED: March 2026 - Added longer wait for lazy-loading and animations
+    private void scrollToElement(WebElement element) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
+        // OLD: try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        // NEW: Increased wait for lazy-loaded content and CSS animations in headless mode
+        try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+    
+    // ENHANCED: March 2026 - Added explicit wait for clickability after scroll
+    private WebElement waitAndScrollToElement(By locator) {
+        // First wait for element to be present in DOM
+        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        // Scroll to make it visible
+        scrollToElement(element);
+        // Wait for element to become clickable (handles overlays, animations, z-index issues)
+        return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
 
     private WebDriver startChromeWithRetry(ChromeOptions options, int attempts) {
@@ -179,24 +220,24 @@ public class HeadlessBaseTest {
         System.out.println("Looking for 'New Arrivals' link...");
 
         // New Arrivals
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("New Arrivals"))).click();
+        waitAndScrollToElement(By.linkText("New Arrivals")).click();
         WebElement titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//h1[normalize-space()='New Arrivals'])[1]")));
         Assert.assertEquals(titleElement.getText(), "New Arrivals", "Title does not match"); //(//h1[normalize-space()='New Arrivals'])[1]
 
         // Men's Wear
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Men"))).click();
+        waitAndScrollToElement(By.linkText("Men")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//h1[normalize-space()=\"Men's Sports Wear\"])[1]")));
         Assert.assertEquals(titleElement.getText(), "Men's Sports Wear", "Title does not match");
 
         // Women's Wear
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Women"))).click();
+        waitAndScrollToElement(By.linkText("Women")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("(//h1[normalize-space()=\"Women's Sports Wear\"])[1]")
         ));
         Assert.assertEquals(titleElement.getText(), "Women's Sports Wear", "Title does not match");
 
         // Apparel
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Apparel")));
+        waitAndScrollToElement(By.linkText("Apparel"));
         homePage.clickApparel();
         // Verify the title contains "Apparel"
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -206,10 +247,10 @@ public class HeadlessBaseTest {
                 "Title match failed! Expected text to contain 'Apparel' but found: [" + titleElement.getText() + "]");
 
         //Footwear
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Footwear"))).click();
+        waitAndScrollToElement(By.linkText("Footwear")).click();
 
         //Gym Equipment
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment"))).click();
+        waitAndScrollToElement(By.linkText("Gym Equipment")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("(//h1[normalize-space()='Fitness & Gym Equipment'])[1]")
         ));
@@ -217,7 +258,7 @@ public class HeadlessBaseTest {
 
 
         //Massagers
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Massagers"))).click();
+        waitAndScrollToElement(By.linkText("Massagers")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("(//h1[normalize-space()='Relaxation Machines'])[1]")
         ));
@@ -225,10 +266,10 @@ public class HeadlessBaseTest {
 
 
         //Accessories
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Accessories"))).click();
+        waitAndScrollToElement(By.linkText("Accessories")).click();
 
         // Cycles
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cycles"))).click();
+        waitAndScrollToElement(By.linkText("Cycles")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//h1[contains(@class, 'hometitle') and contains(text(), 'Cycles')]")
         ));
@@ -243,7 +284,7 @@ public class HeadlessBaseTest {
         Assert.assertEquals(titleElement.getText().trim(), "Fitness Essentials for Every Activity", "Title does not match");
 
         // Store Locator
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Store Locator"))).click();
+        waitAndScrollToElement(By.linkText("Store Locator")).click();
         titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("(//h1[normalize-space()='Cult exclusive stores'])[1]")
         ));
@@ -257,22 +298,22 @@ public class HeadlessBaseTest {
     public void filterByCultBrand() {
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
+        waitAndScrollToElement(By.linkText("Gym Equipment"));
         cartCheckout.clickGymEquipment();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Treadmills'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Treadmills'])[1]"));
         cartCheckout.clicktreadmillsButton();
 
         // Wait for the brand section to be clickable and then expand it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Brand'])[1]"));
         cartCheckout.expandBrandSection();
 
         // Wait for the 'cult' checkbox to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='filter-group__item__text'][normalize-space()='RPM Fitness by Cult']")));
+        waitAndScrollToElement(By.xpath("//span[@class='filter-group__item__text'][normalize-space()='RPM Fitness by Cult']"));
         cartCheckout.clickCultCheckbox();
 
         // Wait for the treadmill product to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']")));
+        waitAndScrollToElement(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']"));
         cartCheckout.selectTreadmill();
 
         // Wait for the 'Add to Cart' button to be clickable and then click it
@@ -307,7 +348,7 @@ public class HeadlessBaseTest {
         CartEmpty cartEmpty = new CartEmpty(driver);
 
         // Wait for the cart icon to be clickable, then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[@class='cart-link__icon']")));
+        waitAndScrollToElement(By.xpath("//span[@class='cart-link__icon']"));
         cartEmpty.clickCartIcon();
 
         // Wait for the empty cart text to be visible, then verify it
@@ -315,7 +356,7 @@ public class HeadlessBaseTest {
         cartEmpty.verifyEmptyCartText();
 
         // Wait for the "Back to Homepage" button to be clickable, then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[normalize-space()='Continue Shopping']")));
+        waitAndScrollToElement(By.xpath("//a[normalize-space()='Continue Shopping']"));
         cartEmpty.clickBackToHomepage();
     }
 
@@ -323,32 +364,32 @@ public class HeadlessBaseTest {
     @Test(priority = 4)
     public void checkServiceability() {
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
+        waitAndScrollToElement(By.linkText("Gym Equipment"));
         ValidateServicibility ValidateServicibility = new ValidateServicibility(driver);
         ValidateServicibility.clickGymEquipment();
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
 
-        WebElement filterElement = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[contains(text(),'Filter')])[1]")));
+        WebElement filterElement = waitAndScrollToElement(By.xpath("(//span[contains(text(),'Filter')])[1]"));
         Actions actions = new Actions(driver);
         actions.doubleClick(filterElement).perform();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Category'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Category'])[1]"));
         ValidateServicibility.expandCategorySection();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='filter-group__item__text'][normalize-space()='Treadmill'])[1]")));
+        waitAndScrollToElement(By.xpath("(//span[@class='filter-group__item__text'][normalize-space()='Treadmill'])[1]"));
         ValidateServicibility.clickTreadmillsCheckbox();
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Brand'])[1]"));
         ValidateServicibility.expandBrandSection();
 
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='cult'])[1]")));
+        waitAndScrollToElement(By.xpath("(//span[normalize-space()='cult'])[1]"));
         ValidateServicibility.clickCultCheckbox();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[contains(text(),'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto')])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[contains(text(),'Smartrun Davie 7 HP Peak Treadmill | 15-level Auto')])[1]"));
         ValidateServicibility.selectAvailabletreadmill();
 
 
@@ -404,23 +445,23 @@ public class HeadlessBaseTest {
         Pages.VerifyPDPComponents verifyPDPComponents = new Pages.VerifyPDPComponents(driver);
 
         // Click on the massagers link
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Massagers")));
+        waitAndScrollToElement(By.linkText("Massagers"));
         verifyPDPComponents.clickMassagerLink();
 
         // Wait for the massage chair product to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Massage Chair'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Massage Chair'])[1]"));
         verifyPDPComponents.clickMassagchair();
 
         // Wait for the brand section to be clickable and then expand it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Brand'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Brand'])[1]"));
         verifyPDPComponents.clickBrandDropdown();
 
         // Wait for the 'cult' checkbox to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='cult'])[1]")));
+        waitAndScrollToElement(By.xpath("(//span[normalize-space()='cult'])[1]"));
         verifyPDPComponents.clickCultcheckbox();
 
         // Wait for the massage chair product to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Cult LUXE Massage Chair | Zero Gravity with AI Voice & Bluetooth | 3D Experience | Smart Dial & 18 Preset Programs | Smart Touch Screen'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Cult LUXE Massage Chair | Zero Gravity with AI Voice & Bluetooth | 3D Experience | Smart Dial & 18 Preset Programs | Smart Touch Screen'])[1]"));
         verifyPDPComponents.clickMassagechairproduct();
         // Wait for the EMI info icon to be clickable and then click it
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//img[@class='snap_cult_info_img']")));
@@ -490,22 +531,22 @@ public class HeadlessBaseTest {
 
 
         // Part one to search for the bottles
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
+        waitAndScrollToElement(By.xpath("(//span[@class='show-search-link__icon'])[2]"));
         searchProduct.clickSearchBoxIcon();
         // Wait for the search input box to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
+        waitAndScrollToElement(By.xpath("//input[@class='main-search__input']"));
         searchProduct.closeSearchBox();
         // Wait for the search box icon to be clickable and then click it again to open the search box
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
+        waitAndScrollToElement(By.xpath("(//span[@class='show-search-link__icon'])[2]"));
         searchProduct.clickSearchBoxIcon();
         // Wait for the search input box to be clickable and then enter the search text
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
+        waitAndScrollToElement(By.xpath("//input[@class='main-search__input']"));
         searchProduct.enterSearchText("bottles");
         // Wait for the search button to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
+        waitAndScrollToElement(By.linkText("View all search results"));
         Assert.assertTrue(driver.findElement(By.linkText("View all search results")).isDisplayed(), "Search results link is not displayed");
         // Wait for the "View all search results" link to be clickable and then click it  and verify the search results page is displayed
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
+        waitAndScrollToElement(By.linkText("View all search results"));
         searchProduct.clickViewResult();
         // Part two to search for other categories
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//input[@placeholder='Search our store'])[1]")));
@@ -531,23 +572,23 @@ public class HeadlessBaseTest {
         Pages.UnlockOffers unlockOffers = new Pages.UnlockOffers(driver);
 
         // Click on the footwear link
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Footwear")));
+        waitAndScrollToElement(By.linkText("Footwear"));
         unlockOffers.clickFootwearlink();
         //  ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)"); --> Use to add the scroll down the page if the element is not visible in viewport
         // Wait for the shoes product to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n")));
+        waitAndScrollToElement(By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n"));
         unlockOffers.clickShoes();
         // Wait for the "Additional offers for you" section to be visible and verify it
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='product-discount-additional'])[1]")));
         unlockOffers.isAdditonalOffersSectionDisplayed("Additional offers for you");
         // Wait for the plus button to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div.product-discount-view-all.product-discount-modal-button")));
+        waitAndScrollToElement(By.cssSelector("div.product-discount-view-all.product-discount-modal-button"));
         unlockOffers.clickPlusButton();
         // Wait for the "Offers for you" title to be visible and verify it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='cart-offer-callout-card-header'])[1]"))); //(//div[@class='cart-offer-callout-card-header'])[1]
+        waitAndScrollToElement(By.xpath("(//div[@class='cart-offer-callout-card-header'])[1]")); //(//div[@class='cart-offer-callout-card-header'])[1]
         unlockOffers.isBestOfferTextDisplayed("Best Offer - Apply at Checkout");
         // Wait for the "Unlock Offers" text to be clickable and verify it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[normalize-space()='Unlock Offers'])[1]")));
+        waitAndScrollToElement(By.xpath("(//span[normalize-space()='Unlock Offers'])[1]"));
         unlockOffers.isUnlockOffersTextDisplayed("Unlock Offers");
         // Wait for the "RELAX10K" offer text to be clickable and verify it
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='cart-offer-callout-card-body-header column-reverse']//div[@class='offer-code'][normalize-space()='WELCOME500']")));
@@ -590,25 +631,25 @@ public class HeadlessBaseTest {
 
 
         // Add the treadmill
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='show-search-link__icon'])[2]")));
+        waitAndScrollToElement(By.xpath("(//span[@class='show-search-link__icon'])[2]"));
         cartOffers.clickSearchBoxIcon();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
+        waitAndScrollToElement(By.xpath("//input[@class='main-search__input']"));
         cartOffers.enterSearchText("Smartrun Carson 5.5 HP Peak Treadmill");
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[@aria-label='Search'])[1]")));
+        waitAndScrollToElement(By.xpath("(//button[@aria-label='Search'])[1]"));
         cartOffers.clickSearchFor();
 
         // Below line is used to scroll down the page to view the treadmill product
         //((JavascriptExecutor) driver).executeScript("window.scrollBy(0,700)"); // Use JavaScript to scroll down the page(x,y) component x- vertical, y- horizontal
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space()='RPM Fitness by Cult']")));
+        waitAndScrollToElement(By.xpath("//span[normalize-space()='RPM Fitness by Cult']"));
         cartOffers.clickRPMFilterButton();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']")));
+        waitAndScrollToElement(By.xpath("//div[normalize-space()='RPM Active1100DCM 6HP Peak Treadmill | 15-level Auto-Incline | Max Weight-140kg | Max Speed-18kmph (with 6 months extended warranty)']"));
         cartOffers.clickTreadmill1();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[normalize-space()='Add to Cart'])[1]")));
+        waitAndScrollToElement(By.xpath("(//button[normalize-space()='Add to Cart'])[1]"));
         cartOffers.clickAddToCartButton();
 
 
@@ -702,23 +743,23 @@ public class HeadlessBaseTest {
     public void CheckoutLogin() {
         Pages.CheckoutLogin checkoutLogin = new Pages.CheckoutLogin(driver);
         // Pages.CartOffers cartOffers = new Pages.CartOffers(driver);
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Gym Equipment")));
+        waitAndScrollToElement(By.linkText("Gym Equipment"));
         checkoutLogin.clickGymEquipment();
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Exercise Cycles'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Exercise Cycles'])[1]"));
         checkoutLogin.clickExerciseBike();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[normalize-space()='Smartbike Danville | 6.5kg Flywheel | Max Weight-130kg | 100 Level Magnetic Resistance (with 6 months extended warranty)'])[1]")));
+        waitAndScrollToElement(By.xpath("(//div[normalize-space()='Smartbike Danville | 6.5kg Flywheel | Max Weight-130kg | 100 Level Magnetic Resistance (with 6 months extended warranty)'])[1]"));
         checkoutLogin.clickBikeExercise();
 
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='btn btn--large add-to-cart' and @type='submit' and @name='add' and @data-event-type='add-to-cart' and @data-event-name='Add to Cart']")));
+        waitAndScrollToElement(By.xpath("//button[@class='btn btn--large add-to-cart' and @type='submit' and @name='add' and @data-event-type='add-to-cart' and @data-event-name='Add to Cart']"));
         checkoutLogin.clickaddcart();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='cart-link__icon'])[1]")));
+        waitAndScrollToElement(By.xpath("(//span[@class='cart-link__icon'])[1]"));
         checkoutLogin.clickCartButton();
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
+        waitAndScrollToElement(By.xpath("//button[normalize-space()='Checkout']"));
         checkoutLogin.clickCheckoutButton();
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
@@ -727,7 +768,7 @@ public class HeadlessBaseTest {
         phoneInput.clear();
         phoneInput.sendKeys("8792514524");
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(@class, 'continue--button') and text()='Continue']\n"))).click();
+        waitAndScrollToElement(By.xpath("//button[contains(@class, 'continue--button') and text()='Continue']\n")).click();
 
     }
 
