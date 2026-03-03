@@ -91,8 +91,6 @@ public class HeadlessBaseTest {
         driver.manage().deleteAllCookies();
 
         // Set viewport size for consistent rendering (important for lazy loading)
-        // CHANGED: March 2026 - Using maximize instead of fixed size
-        // OLD: driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
         // NEW: Maximize ensures proper viewport for lazy-loading detection
         driver.manage().window().maximize();
 
@@ -130,15 +128,6 @@ public class HeadlessBaseTest {
         }
         
         // FIX: Improved lazy-loading trigger for headless mode
-        // OLD CODE (commented out by engineer - March 2026):
-        // The original quick scroll was too fast for lazy-loaded content in headless mode
-        // js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        // try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-        // js.executeScript("window.scrollTo(0, 0);");
-        // try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-        
-        // NEW CODE: Progressive scrolling to trigger all lazy-loaded content
-        // Reason: Website uses lazy loading - elements only render when scrolled into viewport
         // This ensures all navigation links and interactive elements become visible
         System.out.println("Triggering lazy-loaded content with progressive scroll...");
         long pageHeight = (Long) js.executeScript("return document.body.scrollHeight");
@@ -160,7 +149,7 @@ public class HeadlessBaseTest {
 
     }
 
-    // Helper method to scroll element into view and wait for it to be visible
+
     // ENHANCED: March 2026 - Added longer wait for lazy-loading and animations
     private void scrollToElement(WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -170,7 +159,6 @@ public class HeadlessBaseTest {
         try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
     
-    // Helper method to wait for element with scroll into view
     // ENHANCED: March 2026 - Added explicit wait for clickability after scroll
     private WebElement waitAndScrollToElement(By locator) {
         // First wait for element to be present in DOM
