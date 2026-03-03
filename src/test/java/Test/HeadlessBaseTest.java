@@ -90,8 +90,12 @@ public class HeadlessBaseTest {
         driver = startChromeWithRetry(options, 2);
         driver.manage().deleteAllCookies();
 
-        // Initialize WebDriverWait
-        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        // Configure timeouts for headless mode stability
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+
+        // Initialize WebDriverWait with increased timeout for headless mode
+        wait = new WebDriverWait(driver, Duration.ofSeconds(40));
 
         // Navigate to the website
         driver.get("https://cultstore.com/");
