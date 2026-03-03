@@ -12,7 +12,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.awt.*;
 import java.time.Duration;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -29,7 +28,6 @@ public class HeadlessBaseTest {
     @BeforeMethod
     public void setup() {
 
-
         // Set up ChromeDriver with options
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--disable-notifications");
@@ -39,11 +37,20 @@ public class HeadlessBaseTest {
 
         // Additional code for the headless mode
         options.addArguments("--headless=new"); // Use modern headless mode in CI
-        options.addArguments("--no-sandbox"); // Sandbox typically required in CI environments
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox"); // CRITICAL: Required in Docker/Jenkins
+        options.addArguments("--disable-dev-shm-usage"); // CRITICAL: Overcome limited resource problems
+        options.addArguments("--disable-gpu"); // Disable GPU hardware acceleration
         options.addArguments("--remote-debugging-port=9222");
         options.addArguments("--disable-software-rasterizer");
+        
+        // Additional stability options for Jenkins/Docker
+        options.addArguments("--disable-extensions");
+        options.addArguments("--disable-infobars");
+        options.addArguments("--disable-browser-side-navigation");
+        options.addArguments("--disable-features=VizDisplayCompositor");
+        options.addArguments("--disable-setuid-sandbox");
+        options.addArguments("--single-process"); // CRITICAL: Run Chrome as single process in container
+        options.addArguments("--disable-web-security");
 
         // The "Masking" kit from BaseTest
         options.setExperimentalOption("excludeSwitches", java.util.Collections.singletonList("enable-automation"));
@@ -53,9 +60,29 @@ public class HeadlessBaseTest {
         // Add a REAL User-Agent from BaseTest
         options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
 
+        // Check for Chrome binary location from environment variable
         String chromeBinary = System.getenv("CHROME_BIN");
         if (chromeBinary != null && !chromeBinary.isBlank()) {
+            System.out.println("Using Chrome from CHROME_BIN: " + chromeBinary);
             options.setBinary(chromeBinary);
+        } else {
+            // Try common Chrome locations in Linux/Docker
+            String[] possiblePaths = {
+                    "/usr/bin/google-chrome",
+                    "/usr/bin/chrome",
+                    "/usr/bin/chromium",
+                    "/usr/bin/chromium-browser"
+            };
+            
+            System.out.println("CHROME_BIN not set, searching for Chrome in common locations...");
+            for (String path : possiblePaths) {
+                java.io.File chromeFile = new java.io.File(path);
+                if (chromeFile.exists()) {
+                    System.out.println("Found Chrome at: " + path);
+                    options.setBinary(path);
+                    break;
+                }
+            }
         }
 
         // Initialize WebDriver
@@ -79,18 +106,42 @@ public class HeadlessBaseTest {
         RuntimeException lastError = null;
         for (int i = 1; i <= attempts; i++) {
             try {
+                System.out.println("Starting Chrome browser (attempt " + i + " of " + attempts + ")...");
                 return new ChromeDriver(options);
             } catch (RuntimeException e) {
                 lastError = e;
-                System.err.println("Chrome start attempt " + i + " failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw e;
+                System.err.println("Attempt " + i + " failed: " + e.getClass().getSimpleName());
+                System.err.println("Error: " + e.getMessage());
+                
+                // Print more detailed error information
+                if (e.getCause() != null) {
+                    System.err.println("Root cause: " + e.getCause().getClass().getSimpleName());
+                    System.err.println("Details: " + e.getCause().getMessage());
+                }
+                
+                if (i < attempts) {
+                    System.err.println("Waiting 2 seconds before retry...\n");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
                 }
             }
         }
+        
+        // If all attempts failed, provide helpful error message
+        System.err.println("\n========================================");
+        System.err.println("CHROME STARTUP FAILED AFTER " + attempts + " ATTEMPTS");
+        System.err.println("========================================");
+        System.err.println("Common causes:");
+        System.err.println("1. Chrome/Chromium browser is not installed on the Jenkins agent");
+        System.err.println("2. Missing system dependencies (fonts, libraries)");
+        System.err.println("3. CHROME_BIN environment variable not set correctly");
+        System.err.println("\nPlease ensure Chrome is installed in Jenkins Docker image.");
+        System.err.println("========================================\n");
+        
         throw lastError;
     }
 
