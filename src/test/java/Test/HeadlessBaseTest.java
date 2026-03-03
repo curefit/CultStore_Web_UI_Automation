@@ -99,6 +99,28 @@ public class HeadlessBaseTest {
 
         // Navigate to the website
         driver.get("https://cultstore.com/");
+        
+        // Debug: Log page load information for headless troubleshooting
+        System.out.println("========== PAGE LOAD DEBUG INFO ==========");
+        System.out.println("Current URL: " + driver.getCurrentUrl());
+        System.out.println("Page Title: " + driver.getTitle());
+        System.out.println("Page Source Length: " + driver.getPageSource().length() + " characters");
+        
+        // Take screenshot for debugging
+        try {
+            java.io.File screenshot = ((org.openqa.selenium.TakesScreenshot) driver)
+                .getScreenshotAs(org.openqa.selenium.OutputType.FILE);
+            java.nio.file.Files.copy(screenshot.toPath(), 
+                new java.io.File("target/debug-homepage-" + System.currentTimeMillis() + ".png").toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Screenshot saved to target/ directory");
+        } catch (Exception e) {
+            System.err.println("Failed to save screenshot: " + e.getMessage());
+        }
+        
+        // Wait a bit longer for JavaScript to execute
+        try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        System.out.println("==========================================");
 
         // Initialize page objects
         homePage = new HomePage(driver);
@@ -152,6 +174,9 @@ public class HeadlessBaseTest {
     @Test(priority = 1)
     public void validateTitles_Products() {
         // This is the code for headless Automation mode
+        
+        System.out.println("Starting validateTitles_Products test...");
+        System.out.println("Looking for 'New Arrivals' link...");
 
         // New Arrivals
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("New Arrivals"))).click();
