@@ -9,7 +9,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 
 public class CartCheckout extends BaseTest {
-    WebDriver driver;
+  //  WebDriver driver;
+
+    // Constructor for CartCheckout
+    public WebDriver driver;
+    public CartCheckout(WebDriver driver) {
+        this.driver = driver;
+    }
 
     By gymEquipmentLink = By.linkText("Gym Equipment");
     By filterButton = By.xpath("(//span[contains(text(),'Filter')])[1]");
@@ -18,10 +24,6 @@ public class CartCheckout extends BaseTest {
     By treadmillsButton = By.xpath("(//div[normalize-space()='Treadmills'])[1]");
     By addToCartButton = By.xpath("(//button[@class='btn btn--large add-to-cart'])[1]");
 
-    // Constructor for CartCheckout
-    public CartCheckout(WebDriver driver) {
-        this.driver = driver;
-    }
 
     // Method to click on the "Gym Equipment" link
     public void clickGymEquipment() {

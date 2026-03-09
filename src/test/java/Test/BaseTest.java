@@ -4,7 +4,6 @@ import Pages.*;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import Pages.CheckoutLogin;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -450,9 +449,20 @@ public class BaseTest {
         // Click on the footwear link
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Footwear")));
         unlockOffers.clickFootwearlink();
-        //  ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)"); --> Use to add the scroll down the page if the element is not visible in viewport
+        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)"); //--> Use to add the scroll down the page if the element is not visible in viewport
+        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,500)");
+
+        // Apply the filter to select the cult brand and white color shoes
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='Brand']")));
+        unlockOffers.clickBrandFilter();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space()='cult']")));
+        unlockOffers.clickCultCheckbox();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()='Color']")));
+        unlockOffers.clickColorFilter();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[normalize-space()='White']")));
+        unlockOffers.clickWhiteCheckbox();
         // Wait for the shoes product to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='product-block__title' and normalize-space(.)=\"cult Men's StridePulse Running Shoes - White\"]")));
         unlockOffers.clickShoes();
         // Wait for the "Additional offers for you" section to be visible and verify it
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//div[@class='product-discount-additional'])[1]")));
@@ -554,10 +564,13 @@ public class BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@class='main-search__input']")));
         cartOffers.enterSearchText2("Sports Bra");
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
-        cartOffers.clickViewResult();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[@aria-label='Search'])[1]")));
+        cartOffers.clickSearchFor();
+      
+       // wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
+       // cartOffers.clickViewResult();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='product-block__title' and text()=\"Women's Black Training Essential Bra\"]")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[contains(@class,'product-block__title') and starts-with(normalize-space(.), \"Women's Black\")]")));
         cartOffers.clickSportsBra();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//fieldset[contains(@class, 'option--size')]//label")));

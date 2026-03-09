@@ -23,8 +23,30 @@ public class UnlockOffers extends BaseTest {
         driver.findElement(Footwearlink).click();
     }
 
+    By brandfilter = By.xpath("//div[normalize-space()='Brand']");
 
-    By shoes = By.xpath("//div[normalize-space()=\"cult Men's Traverse Running Shoes - Off White\"]\n");
+    public void clickBrandFilter() {
+        driver.findElement(brandfilter).click();
+    }
+
+    By cultcheckbox = By.xpath("//span[normalize-space()='cult']");
+
+    public void clickCultCheckbox() {
+        driver.findElement(cultcheckbox).click();
+    }
+
+    By colorfilter = By.xpath("//div[normalize-space()='Color']");
+    public void clickColorFilter() {
+        driver.findElement(colorfilter).click();
+    }
+
+    By whitecheckbox = By.xpath("//span[normalize-space()='White']");
+    public void clickWhiteCheckbox() {
+        driver.findElement(whitecheckbox).click();
+    }
+
+
+    By shoes = By.xpath("//div[@class='product-block__title' and normalize-space(.)=\"cult Men's StridePulse Running Shoes - White\"]");
 
     public void clickShoes() {
         driver.findElement(shoes).click();
