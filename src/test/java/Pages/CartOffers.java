@@ -140,7 +140,7 @@ public class CartOffers extends BaseTest {
         driver.findElement(inputsearchbox2).sendKeys("Women's Black Training Essential Bra");
     }
 
-    By sportsbra = By.xpath("//div[@class='product-block__title' and text()=\"Women's Black Training Essential Bra\"]");
+    By sportsbra = By.xpath("//div[contains(@class,'product-block__title') and starts-with(normalize-space(.), \"Women's Black\")]");
 
     public void clickSportsBra() {
         driver.findElement(sportsbra).click();
