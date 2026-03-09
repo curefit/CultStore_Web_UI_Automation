@@ -3,6 +3,10 @@ package Pages;
 import Test.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 
 
@@ -65,10 +69,17 @@ public class SearchProduct extends BaseTest {
      }
 
     public void searchMultipleProducts(WebDriver driver, String[] searchTerms) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        By searchInput = By.xpath("(//input[@placeholder='Search our store'])[1]");
+        By searchButton = By.xpath("(//button[@data-event-type='submit-search'])[1]");
+        
         for (String term : searchTerms) {
-            driver.findElement(By.xpath("(//input[@placeholder='Search our store'])[1]")).clear();
-            driver.findElement(By.xpath("(//input[@placeholder='Search our store'])[1]")).sendKeys(term);
-            driver.findElement(By.xpath("(//button[@data-event-type='submit-search'])[1]")).click();
+            // Re-find element fresh each iteration to avoid StaleElementReferenceException
+            WebElement inputField = wait.until(ExpectedConditions.elementToBeClickable(searchInput));
+            inputField.clear();
+            inputField.sendKeys(term);
+            wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
+            // Wait for page to stabilize after search
             try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         }
     }
