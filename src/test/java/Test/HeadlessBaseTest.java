@@ -33,32 +33,60 @@ public class HeadlessBaseTest {
         options.addArguments("--disable-notifications");
         options.addArguments("--window-size=1920,1080");
         options.addArguments("--disable-popup-blocking");
-        options.addArguments("--incognito");
+        // REMOVED: incognito mode can trigger bot detection
+        // options.addArguments("--incognito");
 
-        // Additional code for the headless mode
-        options.addArguments("--headless=new"); // Use modern headless mode in CI
+        // ========== HEADLESS MODE CONFIGURATION ==========
+        options.addArguments("--headless=new"); // Modern headless mode (Chrome 109+)
         options.addArguments("--no-sandbox"); // CRITICAL: Required in Docker/Jenkins
-        options.addArguments("--disable-dev-shm-usage"); // CRITICAL: Overcome limited resource problems
+        options.addArguments("--disable-dev-shm-usage"); // CRITICAL: Overcome limited /dev/shm size in containers
         options.addArguments("--disable-gpu"); // Disable GPU hardware acceleration
-        options.addArguments("--remote-debugging-port=9222");
         options.addArguments("--disable-software-rasterizer");
         
-        // Additional stability options for Jenkins/Docker
+        // ========== JENKINS/DOCKER STABILITY OPTIONS ==========
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-infobars");
         options.addArguments("--disable-browser-side-navigation");
         options.addArguments("--disable-features=VizDisplayCompositor");
         options.addArguments("--disable-setuid-sandbox");
-        options.addArguments("--single-process"); // CRITICAL: Run Chrome as single process in container
+        // REMOVED: --single-process can cause stability issues
+        // options.addArguments("--single-process");
         options.addArguments("--disable-web-security");
-
-        // The "Masking" kit from BaseTest
-        options.setExperimentalOption("excludeSwitches", java.util.Collections.singletonList("enable-automation"));
+        options.addArguments("--allow-running-insecure-content");
+        
+        // ========== CRITICAL: MEMORY & CRASH PREVENTION ==========
+        options.addArguments("--disable-features=IsolateOrigins,site-per-process");
+        options.addArguments("--disable-site-isolation-trials");
+        options.addArguments("--disable-background-timer-throttling");
+        options.addArguments("--disable-backgrounding-occluded-windows");
+        options.addArguments("--disable-renderer-backgrounding");
+        options.addArguments("--disable-hang-monitor");
+        options.addArguments("--disable-ipc-flooding-protection");
+        options.addArguments("--memory-pressure-off");
+        
+        // ========== ANTI-BOT DETECTION BYPASS (ENHANCED) ==========
+        // Remove automation indicators
+        options.setExperimentalOption("excludeSwitches", java.util.Arrays.asList(
+            "enable-automation",
+            "enable-logging"
+        ));
         options.setExperimentalOption("useAutomationExtension", false);
         options.addArguments("--disable-blink-features=AutomationControlled");
-
-        // Add a REAL User-Agent from BaseTest
-        options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+        
+        // CRITICAL: Use a recent Chrome user-agent matching the installed version
+        options.addArguments("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36");
+        
+        // Enable JavaScript (some sites check)
+        options.addArguments("--enable-javascript");
+        
+        // Accept languages/encoding to look like a real browser
+        options.addArguments("--lang=en-US,en;q=0.9");
+        options.addArguments("--accept-encoding=gzip, deflate, br");
+        
+        // ========== PERFORMANCE OPTIMIZATIONS ==========
+        options.addArguments("--disable-logging");
+        options.addArguments("--log-level=3");
+        options.addArguments("--silent");
 
         // Check for Chrome binary location from environment variable
         String chromeBinary = System.getenv("CHROME_BIN");
@@ -68,10 +96,12 @@ public class HeadlessBaseTest {
         } else {
             // Try common Chrome locations in Linux/Docker
             String[] possiblePaths = {
+                    "/usr/bin/google-chrome-stable",
                     "/usr/bin/google-chrome",
                     "/usr/bin/chrome",
                     "/usr/bin/chromium",
-                    "/usr/bin/chromium-browser"
+                    "/usr/bin/chromium-browser",
+                    "/opt/google/chrome/chrome"
             };
             
             System.out.println("CHROME_BIN not set, searching for Chrome in common locations...");
@@ -85,35 +115,89 @@ public class HeadlessBaseTest {
             }
         }
 
-        // Initialize WebDriver
+        // Initialize WebDriver with retry logic
         WebDriverManager.chromedriver().setup();
-        driver = startChromeWithRetry(options, 2);
+        driver = startChromeWithRetry(options, 3);
+        
+        // ========== CRITICAL: CDP COMMANDS FOR ANTI-BOT BYPASS ==========
+        // Execute CDP commands to hide webdriver property and other automation indicators
+        try {
+            org.openqa.selenium.devtools.DevTools devTools = ((ChromeDriver) driver).getDevTools();
+            devTools.createSession();
+            
+            // Execute JavaScript to mask automation indicators BEFORE page load
+            ((ChromeDriver) driver).executeCdpCommand(
+                "Page.addScriptToEvaluateOnNewDocument",
+                java.util.Map.of("source", 
+                    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});" +
+                    "Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});" +
+                    "Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});" +
+                    "window.chrome = {runtime: {}};" +
+                    "Object.defineProperty(navigator, 'platform', {get: () => 'Linux x86_64'});"
+                )
+            );
+            System.out.println("CDP anti-bot scripts injected successfully");
+        } catch (Exception e) {
+            System.err.println("Warning: Could not inject CDP scripts: " + e.getMessage());
+            // Continue anyway - this is not critical
+        }
+        
         driver.manage().deleteAllCookies();
 
         // Set viewport size for consistent rendering (important for lazy loading)
-        // NEW: Maximize ensures proper viewport for lazy-loading detection
-        driver.manage().window().maximize();
+        driver.manage().window().setSize(new Dimension(1920, 1080));
 
         // Configure timeouts for headless mode stability
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(90)); // Increased for slower CI
 
         // Initialize WebDriverWait with increased timeout for headless mode
-        wait = new WebDriverWait(driver, Duration.ofSeconds(40));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(60)); // Increased from 40
 
         // Navigate to the website
+        System.out.println("Navigating to https://cultstore.com/...");
         driver.get("https://cultstore.com/");
         
         // Wait for page to be fully loaded (JavaScript ready state)
         JavascriptExecutor js = (JavascriptExecutor) driver;
         wait.until(webDriver -> js.executeScript("return document.readyState").equals("complete"));
         
-        // Debug: Log page load information for headless troubleshooting
+        // ========== ENHANCED DEBUG INFO ==========
         System.out.println("========== PAGE LOAD DEBUG INFO ==========");
         System.out.println("Current URL: " + driver.getCurrentUrl());
         System.out.println("Page Title: " + driver.getTitle());
-        System.out.println("Page Source Length: " + driver.getPageSource().length() + " characters");
+        String pageSource = driver.getPageSource();
+        System.out.println("Page Source Length: " + pageSource.length() + " characters");
         System.out.println("Window Size: " + driver.manage().window().getSize());
+        
+        // CRITICAL: Check for bot detection / blocked page indicators
+        boolean possibleBotBlock = false;
+        String lowerPageSource = pageSource.toLowerCase();
+        if (lowerPageSource.contains("captcha") || 
+            lowerPageSource.contains("verify you are human") ||
+            lowerPageSource.contains("access denied") ||
+            lowerPageSource.contains("blocked") ||
+            lowerPageSource.contains("cloudflare") ||
+            lowerPageSource.contains("please wait while we verify")) {
+            System.err.println("WARNING: Bot detection/captcha detected on page!");
+            possibleBotBlock = true;
+        }
+        
+        if (pageSource.length() < 5000) {
+            System.err.println("WARNING: Page source is very small (" + pageSource.length() + " chars) - possible block!");
+            possibleBotBlock = true;
+        }
+        
+        // Save page source for debugging
+        try {
+            java.nio.file.Files.writeString(
+                java.nio.file.Path.of("target/debug-page-source-" + System.currentTimeMillis() + ".html"),
+                pageSource
+            );
+            System.out.println("Page source saved to target/ directory");
+        } catch (Exception e) {
+            System.err.println("Failed to save page source: " + e.getMessage());
+        }
         
         // Take screenshot for debugging
         try {
@@ -127,20 +211,65 @@ public class HeadlessBaseTest {
             System.err.println("Failed to save screenshot: " + e.getMessage());
         }
         
+        // If bot detection suspected, try a page refresh
+        if (possibleBotBlock) {
+            System.out.println("Attempting page refresh to bypass temporary block...");
+            try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            driver.navigate().refresh();
+            wait.until(webDriver -> js.executeScript("return document.readyState").equals("complete"));
+            try { Thread.sleep(2000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+        
         // FIX: Improved lazy-loading trigger for headless mode
         // This ensures all navigation links and interactive elements become visible
         System.out.println("Triggering lazy-loaded content with progressive scroll...");
         long pageHeight = (Long) js.executeScript("return document.body.scrollHeight");
-        int scrollSteps = 5;
+        int scrollSteps = 6; // Increased from 5
         for (int i = 1; i <= scrollSteps; i++) {
             long scrollTo = (pageHeight / scrollSteps) * i;
             js.executeScript("window.scrollTo(0, " + scrollTo + ");");
-            try { Thread.sleep(800); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } // Increased from 800
         }
         // Scroll back to top
         js.executeScript("window.scrollTo(0, 0);");
-        try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        try { Thread.sleep(1500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } // Increased from 1000
         System.out.println("Lazy-load trigger complete");
+        
+        // CRITICAL: Wait for a known element to confirm page is truly loaded
+        // This validates that the real site content is present, not a blocked page
+        try {
+            // Try to find any of these expected elements on the home page
+            boolean siteLoaded = false;
+            String[] expectedSelectors = {
+                "header", "nav", ".header", ".navbar", "[data-testid]", 
+                ".hometitle", ".home", "main", "#root", ".app"
+            };
+            
+            for (String selector : expectedSelectors) {
+                try {
+                    WebDriverWait quickWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+                    quickWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
+                    System.out.println("Found expected element: " + selector + " - Site appears to be loaded correctly");
+                    siteLoaded = true;
+                    break;
+                } catch (Exception ignored) {
+                    // Try next selector
+                }
+            }
+            
+            if (!siteLoaded) {
+                System.err.println("WARNING: Could not find any expected site elements - page may not be loading correctly!");
+                // Take another screenshot
+                java.io.File failScreenshot = ((org.openqa.selenium.TakesScreenshot) driver)
+                    .getScreenshotAs(org.openqa.selenium.OutputType.FILE);
+                java.nio.file.Files.copy(failScreenshot.toPath(), 
+                    new java.io.File("target/debug-failed-load-" + System.currentTimeMillis() + ".png").toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            System.err.println("Error during page load validation: " + e.getMessage());
+        }
+        
         System.out.println("==========================================");
 
         // Initialize page objects
@@ -790,9 +919,37 @@ public class HeadlessBaseTest {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void teardown() {
+    public void teardown(org.testng.ITestResult result) {
+        // Capture screenshot on test failure for debugging
+        if (result.getStatus() == org.testng.ITestResult.FAILURE && driver != null) {
+            try {
+                String testName = result.getName();
+                java.io.File screenshot = ((org.openqa.selenium.TakesScreenshot) driver)
+                    .getScreenshotAs(org.openqa.selenium.OutputType.FILE);
+                String screenshotPath = "target/failure-" + testName + "-" + System.currentTimeMillis() + ".png";
+                java.nio.file.Files.copy(screenshot.toPath(), 
+                    new java.io.File(screenshotPath).toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Failure screenshot saved: " + screenshotPath);
+                
+                // Also save the page source for debugging
+                String pageSourcePath = "target/failure-" + testName + "-" + System.currentTimeMillis() + ".html";
+                java.nio.file.Files.writeString(
+                    java.nio.file.Path.of(pageSourcePath),
+                    driver.getPageSource()
+                );
+                System.out.println("Failure page source saved: " + pageSourcePath);
+            } catch (Exception e) {
+                System.err.println("Failed to capture failure artifacts: " + e.getMessage());
+            }
+        }
+        
         if (driver != null) {
-            driver.quit();
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                System.err.println("Error during driver quit: " + e.getMessage());
+            }
             driver = null;
         }
     }
