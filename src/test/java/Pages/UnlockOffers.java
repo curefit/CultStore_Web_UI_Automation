@@ -2,13 +2,9 @@ package Pages;
 
 import Test.BaseTest;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.List;
 
 public class UnlockOffers extends BaseTest {
@@ -53,20 +49,7 @@ public class UnlockOffers extends BaseTest {
     By shoes = By.xpath("//div[@class='product-block__title' and normalize-space(.)=\"cult Men's StridePulse Running Shoes - White\"]");
 
     public void clickShoes() {
-        // Dismiss any MoEngage popup overlay if present
-        try {
-            List<WebElement> popups = driver.findElements(By.cssSelector("div[id^='moe-onsite-campaign']"));
-            for (WebElement popup : popups) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", popup);
-            }
-        } catch (Exception e) { /* ignore if no popup */ }
-        
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(shoes));
-        // Scroll into view and use JavaScript click to avoid overlay interception
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        try { Thread.sleep(300); } catch (InterruptedException e) { }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        WebUtils.safeClick(driver, shoes);
     }
 
     // Method to click on the "Unlock Offers" button
