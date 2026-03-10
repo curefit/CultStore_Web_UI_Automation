@@ -51,7 +51,7 @@ public class CheckoutLogin extends BaseTest {
         driver.findElement(cartButton).click();
     }
 
-    By checkoutButton = By.xpath("//button[contains(normalize-space(),'Checkout') or contains(@class,'checkout')]");
+    By checkoutButton = By.xpath("//button[normalize-space()='Checkout']");
 
     public void clickCheckoutButton() {
         WebUtils.safeClick(driver, checkoutButton);

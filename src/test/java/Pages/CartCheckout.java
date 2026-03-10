@@ -70,7 +70,7 @@ public class CartCheckout extends BaseTest {
 
     // In src/test/java/Pages/CartCheckout.java
 
-    By checkoutButton = By.xpath("//button[contains(normalize-space(),'Checkout') or contains(@class,'checkout')]");
+    By checkoutButton = By.xpath("//button[normalize-space()='Checkout']");
     public void clickCheckoutButton(){
         WebUtils.safeClick(driver, checkoutButton);
     }
