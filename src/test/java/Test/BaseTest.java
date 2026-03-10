@@ -202,9 +202,10 @@ public class BaseTest {
         cartCheckout.clickCart();
 
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
         // Wait for the checkout button to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']"))); ////button[normalize-space()='Checkout']
         cartCheckout.clickCheckoutButton();
 
         // Verify the checkout page title "Login to checkout"
