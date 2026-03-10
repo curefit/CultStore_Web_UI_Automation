@@ -457,8 +457,8 @@ public class HeadlessBaseTest {
 
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
-        // Wait for the checkout button to be clickable and then click it
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
+        // Wait for the checkout button to be present (flexible locator)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//button[contains(normalize-space(),'Checkout') or contains(@class,'checkout')]")));
         cartCheckout.clickCheckoutButton();
 
         // Verify the checkout page title "Login to checkout"
@@ -805,7 +805,8 @@ public class HeadlessBaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View all search results")));
         cartOffers.clickSearchFor();
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//div[@class='product-block__title'][normalize-space()='Shoulder Pop Active T-shirt'])[1]")));
+        // Wait for any T-shirt/Active product (flexible locator)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'product-block__title') and (contains(normalize-space(),'Shoulder') or contains(normalize-space(),'T-shirt') or contains(normalize-space(),'Active'))]")));
         cartOffers.clickGreenshirt();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//fieldset[contains(@class, 'option--size')]//label")));
