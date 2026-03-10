@@ -77,26 +77,8 @@ public class CartOffers extends BaseTest {
     By greentshirt = By.xpath("//div[contains(@class,'product-block__title') and (contains(normalize-space(),'Shoulder') or contains(normalize-space(),'T-shirt') or contains(normalize-space(),'Active'))]");
 
     public void clickGreenshirt() {
-        // Dismiss any MoEngage popup overlays
-        try {
-            List<WebElement> popups = driver.findElements(By.cssSelector("div[id^='moe-onsite-campaign']"));
-            for (WebElement popup : popups) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", popup);
-            }
-        } catch (Exception e) { /* ignore */ }
-        
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        WebElement element = null;
-        try {
-            element = wait.until(ExpectedConditions.presenceOfElementLocated(greentshirt));
-        } catch (Exception e) {
-            // Fallback: click first product in search results
-            element = wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath("(//div[contains(@class,'product-block__title')])[1]")));
-        }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        try { Thread.sleep(300); } catch (InterruptedException e) { }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        WebUtils.safeClickWithFallback(driver, greentshirt, 
+            By.xpath("(//div[contains(@class,'product-block__title')])[1]"));
     }
 
     By addToCartButton2 = By.xpath("(//button[@class='btn btn--large add-to-cart'])[1]");
@@ -166,27 +148,8 @@ public class CartOffers extends BaseTest {
     By sportsbra = By.xpath("//div[contains(@class,'product-block__title') and (contains(normalize-space(.), 'Bra') or contains(normalize-space(.), 'Sports') or starts-with(normalize-space(.), \"Women's\"))]");
 
     public void clickSportsBra() {
-        // Dismiss any MoEngage popup overlay if present
-        try {
-            List<WebElement> popups = driver.findElements(By.cssSelector("div[id^='moe-onsite-campaign']"));
-            for (WebElement popup : popups) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", popup);
-            }
-        } catch (Exception e) { /* ignore */ }
-        
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        // Try multiple locator strategies
-        WebElement element = null;
-        try {
-            element = wait.until(ExpectedConditions.presenceOfElementLocated(sportsbra));
-        } catch (Exception e) {
-            // Fallback: click first product in search results
-            element = wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath("(//div[contains(@class,'product-block__title')])[1]")));
-        }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        try { Thread.sleep(300); } catch (InterruptedException e) { }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        WebUtils.safeClickWithFallback(driver, sportsbra,
+            By.xpath("(//div[contains(@class,'product-block__title')])[1]"));
     }
 
 

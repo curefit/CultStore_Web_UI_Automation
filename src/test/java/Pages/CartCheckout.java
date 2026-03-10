@@ -72,19 +72,7 @@ public class CartCheckout extends BaseTest {
 
     By checkoutButton = By.xpath("//button[contains(normalize-space(),'Checkout') or contains(@class,'checkout')]");
     public void clickCheckoutButton(){
-        // Dismiss any MoEngage popup overlays
-        try {
-            java.util.List<WebElement> popups = driver.findElements(By.cssSelector("div[id^='moe-onsite-campaign']"));
-            for (WebElement popup : popups) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", popup);
-            }
-        } catch (Exception e) { /* ignore */ }
-        
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(checkoutButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        try { Thread.sleep(300); } catch (InterruptedException e) { }
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        WebUtils.safeClick(driver, checkoutButton);
     }
 
 

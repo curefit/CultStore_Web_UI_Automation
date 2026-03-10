@@ -98,12 +98,7 @@ public class VerifyPDPComponents extends BaseTest {
     }
 
     public void clickPlusButton() {
-        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(plusButton));
-        // Scroll element into view
-        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-        try { Thread.sleep(500); } catch (InterruptedException e) { } // Brief pause after scroll
-        // Use JavaScript click to avoid overlay interception
-        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        WebUtils.safeClick(driver, plusButton);
     }
 
     public boolean isOfferForyou(){

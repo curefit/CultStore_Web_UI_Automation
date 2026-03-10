@@ -907,7 +907,7 @@ public class HeadlessBaseTest {
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//span[@class='cart-link__icon'])[1]")));
         checkoutLogin.clickCartButton();
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[normalize-space()='Checkout']")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//button[contains(normalize-space(),'Checkout') or contains(@class,'checkout')]")));
         checkoutLogin.clickCheckoutButton();
         try {Thread.sleep(3000);} catch (InterruptedException e) {Thread.currentThread().interrupt();}
 
