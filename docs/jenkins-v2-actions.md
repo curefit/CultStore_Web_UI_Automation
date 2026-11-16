@@ -12,3 +12,5 @@ Raw logs and HTTP data are withheld from artifacts. Sanitized HTML/JSON reports 
 | Cultstore Web UI Automation | `cultstore-web-ui-tests.yaml` |
 
 Local validation: repository source compiled with JDK 17; all workflow definitions passed actionlint. No live browser journey, order, or payment was executed.
+
+Configure the existing alert destination as the repository secret `ALLQUIET_WEBHOOK_URL` before cutover. Executed jobs preserve the All Quiet firing/resolved signal with an Actions-specific identity; compile-only PR checks never send notifications. Missing destination is explicitly reported rather than claimed delivered.

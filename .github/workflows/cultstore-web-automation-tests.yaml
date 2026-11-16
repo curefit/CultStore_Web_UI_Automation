@@ -73,3 +73,10 @@ jobs:
     - name: Remove private test logs
       if: ${{ always() }}
       run: rm -f .migration-test.log
+    - name: Preserve configured All Quiet job alerts
+      if: ${{ always() && (github.event_name == 'schedule' || inputs.EXECUTE) }}
+      env:
+        ALLQUIET_WEBHOOK_URL: ${{ secrets.ALLQUIET_WEBHOOK_URL }}
+        RUN_CONCLUSION: ${{ job.status }}
+        TEST_ENV: ${{ inputs.ENV || 'ci' }}
+      run: python3 scripts/migration_notify.py
