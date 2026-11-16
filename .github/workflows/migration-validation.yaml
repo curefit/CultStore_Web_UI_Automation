@@ -1,0 +1,23 @@
+name: Jenkins v2 migration source compilation
+'on':
+  pull_request:
+    paths:
+    - .github/workflows/**
+    - scripts/migration_summary.py
+permissions:
+  contents: read
+jobs:
+  compile-only:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Compile source without invoking browser/API tests
+      run: mvn --batch-mode --no-transfer-progress test-compile -DskipTests
+    - name: Validate the metadata reporter syntax
+      run: python3 -m py_compile scripts/migration_summary.py

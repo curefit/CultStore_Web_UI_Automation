@@ -1,0 +1,75 @@
+name: Cultstore_Web_Automation
+run-name: ${{ github.workflow }} | ${{ inputs.EXECUTE && 'execute' || 'compile-only' }}
+'on':
+  workflow_dispatch:
+    inputs:
+      EXECUTE:
+        description: Execute browser/API tests; false compiles only
+        required: false
+        type: boolean
+        default: false
+      ENV:
+        description: Original Jenkins environment
+        required: false
+        type: choice
+        default: prod
+        options:
+        - prod
+      CONFIRM_EFFECTS:
+        description: Authorize original cart/checkout UI test interactions
+        required: false
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: cultstore-web-automation
+  cancel-in-progress: false
+jobs:
+  tests:
+    if: ${{ github.event_name != 'schedule' || vars.JENKINS_V2_SCHEDULES_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Verify browser availability
+      run: 'test -x "$CHROME_BIN"
+
+        "$CHROME_BIN" --version'
+      env:
+        CHROME_BIN: /usr/bin/google-chrome
+    - name: Run original test target or compile only
+      env:
+        TEST_RUNNER: HeadlessBaseTest
+        TEST_ENV: ${{ inputs.ENV || 'ci' }}
+        EXECUTE: ${{ github.event_name == 'schedule' || inputs.EXECUTE }}
+        CONFIRM_EFFECTS: ${{ inputs.CONFIRM_EFFECTS }}
+        CHROME_BIN: /usr/bin/google-chrome
+      run: "set -euo pipefail\nif [ \"$EXECUTE\" != 'true' ]; then\n  mvn --batch-mode --no-transfer-progress test-compile\
+        \ -DskipTests\n  echo 'COMPILE ONLY: no live browser/API test evidence' >> \"$GITHUB_STEP_SUMMARY\"\n  exit 0\n\
+        fi\nif [ \"$CONFIRM_EFFECTS\" != 'true' ]; then echo 'CONFIRM_EFFECTS is required before browser interactions';\
+        \ exit 1; fi\nmvn --batch-mode --no-transfer-progress test -Dtest=\"$TEST_RUNNER\" -DfailIfNoTests=true > .migration-test.log\
+        \ 2>&1\n"
+    - name: Verify nonempty test outcomes and publish sanitized report
+      if: ${{ always() }}
+      env:
+        EXECUTE: ${{ github.event_name == 'schedule' || inputs.EXECUTE }}
+        REQUIRE_KARATE: 'false'
+      run: python3 scripts/migration_summary.py
+    - name: Upload sanitized results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: cultstore-web-automation-tests-${{ github.run_id }}
+        path: migration-results/
+        if-no-files-found: error
+        retention-days: 14
+    - name: Remove private test logs
+      if: ${{ always() }}
+      run: rm -f .migration-test.log
