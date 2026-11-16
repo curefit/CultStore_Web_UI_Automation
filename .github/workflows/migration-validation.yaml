@@ -4,6 +4,7 @@ name: Jenkins v2 migration source compilation
     paths:
     - .github/workflows/**
     - scripts/migration_summary.py
+    - tests/test_migration_summary.py
 permissions:
   contents: read
 jobs:
@@ -21,3 +22,5 @@ jobs:
       run: mvn --batch-mode --no-transfer-progress test-compile -DskipTests
     - name: Validate the metadata reporter syntax
       run: python3 -m py_compile scripts/migration_summary.py
+    - name: Verify report failure and privacy contracts without site calls
+      run: python3 -m unittest discover -s tests -v
